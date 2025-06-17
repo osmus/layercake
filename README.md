@@ -6,6 +6,9 @@ OpenStreetMap’s native file format is OSM PBF, but this 80GB ‘planet file’
 
 This repository contains the code that is used to generate the extracts, which are hosted by [OpenStreetMap US](https://openstreetmap.us/) at `data.openstreetmap.us`. [Instructions on how to access the data](https://openstreetmap.us/our-work/layercake/) are available on the OpenStreetMap US website.
 
+> [!WARNING]
+> Layercake is still experimental, and may change as it evolves. If you are interested in thematic extracts of OSM data, you can help the project's development by using it and providing feedback.
+
 ## License
 
 Code in this repository is dedicated to the public domain via the [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) license. You may use or modify it for any purpose, without needing to ask permission. See the [LICENSE](./LICENSE) file for details.
