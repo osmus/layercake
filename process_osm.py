@@ -15,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description='Process OSM data into multiple GeoParquet files')
     parser.add_argument('osm_file', help='Input OSM PBF file')
     parser.add_argument('output_dir', help='Directory to write output GeoParquet files to')
+    parser.add_argument('--osmium-idx', default='flex_mem', help='Osmium index type to use for node locations')
 
     for layer_name in LAYERS.keys():
         parser.add_argument(
@@ -67,7 +68,8 @@ def main():
     
     handler.apply_file(
         args.osm_file,
-        filters=[osmium.filter.EmptyTagFilter()]
+        filters=[osmium.filter.EmptyTagFilter()],
+        idx=args.osmium_idx,
     )
 
     # Finish all writers
