@@ -1,3 +1,7 @@
+out/
+data/
+*.osm.pbf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
