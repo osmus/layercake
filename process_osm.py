@@ -1,4 +1,5 @@
 import sys
+import json
 from os import path
 import argparse
 import osmium
@@ -47,7 +48,7 @@ def main():
         def __init__(self, writers):
             super().__init__()
             self.writers = writers
-            
+
         def node(self, o):
             for writer in self.writers:
                 if hasattr(writer, 'node'):
@@ -65,7 +66,6 @@ def main():
     
     # Create and run the handler
     handler = MultiHandler(writers)
-    
     handler.apply_file(
         args.osm_file,
         filters=[osmium.filter.EmptyTagFilter()],
@@ -75,6 +75,18 @@ def main():
     # Finish all writers
     for writer in writers:
         writer.finish()
+
+    # Write metadata
+    reader = osmium.io.Reader(args.osm_file)
+    header = reader.header()
+    metadata = {
+        'timestamp': header.get('timestamp'),
+        'seqno': header.get('osmosis_replication_sequence_number'),
+    }
+    
+    with open(path.join(args.output_dir, 'metadata.json'), 'w') as f:
+        json.dump(metadata, f, indent=2)
+        f.write('\n')
     
     return 0
 
