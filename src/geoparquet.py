@@ -1,4 +1,3 @@
-import sys
 import json
 import binascii
 
@@ -102,7 +101,9 @@ class GeoParquetWriter(osmium.SimpleHandler):
 
         bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
 
-        self.chunk.append({"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb})
+        self.chunk.append(
+            {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
+        )
 
         if len(self.chunk) >= 1000:
             self.flush()
