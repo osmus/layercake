@@ -2,7 +2,7 @@
 
 Layercake is a set of thematic extracts of [OpenStreetMap](https://www.openstreetmap.org/about) data in cloud-native file formats.
 
-OpenStreetMap’s native file format is OSM PBF, but this 80GB ‘planet file’ is unwieldly and not supported by all GIS software. Layercake provides OSM data separated into thematic layers (buildings, transportation, etc) and converted to cloud-native file formats like GeoParquet that are easy to use with software from DuckDB to QGIS.
+OpenStreetMap’s native file format is OSM PBF, but this 80GB ‘planet file’ is unwieldy and not supported by all GIS software. Layercake provides OSM data separated into thematic layers (buildings, transportation, etc) and converted to cloud-native file formats like GeoParquet that are easy to use with software from DuckDB to QGIS.
 
 This repository contains the code that is used to generate the extracts, which are hosted by [OpenStreetMap US](https://openstreetmap.us/) at `data.openstreetmap.us`. [Instructions on how to access the data](https://openstreetmap.us/our-work/layercake/) are available on the OpenStreetMap US website.
 
