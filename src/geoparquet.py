@@ -16,17 +16,19 @@ class GeoParquetWriter(osmium.SimpleHandler):
     their own tag sets and filtering logic.
     """
 
-    def __init__(self, filename, tags, schema_metadata=None):
+    def __init__(self, filename, tags, schema_metadata=None, row_group_size = 100_000):
         """Initialize the writer.
 
         Args:
             filename: Path to the output Parquet file
             tags: List of OSM tags to include in the output
             schema_metadata: Optional additional metadata to include in the schema
+            row_group_size: The number of rows to write per group
         """
         super().__init__()
         self.filename = filename
         self.tags = tags
+        self.row_group_size = row_group_size
 
         # Create the schema
         bbox_schema = pyarrow.struct(
@@ -105,7 +107,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
             {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
         )
 
-        if len(self.chunk) >= 1000:
+        if len(self.chunk) >= self.row_group_size:
             self.flush()
 
     def flush(self):
