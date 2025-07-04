@@ -45,10 +45,20 @@ def main():
 
     # Create writers for each output type
     writers = []
+    tag_name_filters = set()
     for layer_name in enabled_layers:
         layer_class = LAYERS[layer_name]
         output_path = path.join(args.output_dir, f"{layer_name}.parquet")
+
         writers.append(layer_class(output_path))
+        if not layer_class.FILTERS:
+            raise NotImplementedError(f"Writer {layer_name} has no FILTERS defined!")
+        tag_name_filters.update(layer_class.FILTERS)
+
+    filters = [
+        osmium.filter.EmptyTagFilter(),
+        osmium.filter.KeyFilter(*tag_name_filters),
+    ]
 
     if not writers:
         print("Error: No output files specified", file=sys.stderr)
@@ -79,7 +89,7 @@ def main():
     handler = MultiHandler(writers)
     handler.apply_file(
         args.osm_file,
-        filters=[osmium.filter.EmptyTagFilter()],
+        filters=filters,
         idx=args.osmium_idx,
     )
 

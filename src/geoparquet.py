@@ -1,5 +1,6 @@
 import json
 import binascii
+import typing
 
 import osmium
 import pyarrow
@@ -16,7 +17,15 @@ class GeoParquetWriter(osmium.SimpleHandler):
     their own tag sets and filtering logic.
     """
 
-    def __init__(self, filename, tags, schema_metadata=None, row_group_size = 100_000):
+    # A set of tags that the writer is interested in.
+    # Subclasses MUST add these (or you'll trigger a runtime assertion).
+    # Filters are OR'd together across a processing run.
+    # Objects will match if they contain a tag that ANY writer is interested in.
+    # Writers will receive objects matching the aggregate filter,
+    # so handlers should implement their own checks.
+    FILTERS: typing.Set[str] = set()
+
+    def __init__(self, filename, tags, schema_metadata=None, row_group_size=100_000):
         """Initialize the writer.
 
         Args:
