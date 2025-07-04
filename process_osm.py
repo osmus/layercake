@@ -70,6 +70,11 @@ def main():
                 if hasattr(writer, "way"):
                     writer.way(o)
 
+        def relation(self, o):
+            for writer in self.writers:
+                if hasattr(writer, "relation"):
+                    writer.relation(o)
+
         def area(self, o):
             for writer in self.writers:
                 if hasattr(writer, "area"):
