@@ -30,7 +30,8 @@ class GeoParquetWriter(osmium.SimpleHandler):
 
         Args:
             filename: Path to the output Parquet file
-            tags: List of OSM tags to include in the output
+            tags: A list of OSM tags to include in the output.
+                  List elements may be either strings or a tuple of string and a PyArrow schema.
             schema_metadata: Optional additional metadata to include in the schema
             row_group_size: The number of rows to write per group
         """
@@ -79,7 +80,17 @@ class GeoParquetWriter(osmium.SimpleHandler):
             [
                 ("type", pyarrow.string()),
                 ("id", pyarrow.int64()),
-                ("tags", pyarrow.struct([(tag, pyarrow.string()) for tag in tags])),
+                (
+                    "tags",
+                    pyarrow.struct(
+                        [
+                            (tag, pyarrow.string())
+                            if isinstance(tag, str)
+                            else (tag[0], tag[1])
+                            for tag in tags
+                        ]
+                    ),
+                ),
                 ("bbox", bbox_schema),
                 ("geometry", pyarrow.binary()),
             ],
@@ -108,7 +119,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
         geom = shapely.wkb.loads(wkb_hex, hex=True)
         wkb = binascii.unhexlify(wkb_hex)
 
-        attrs = {key: tags.get(key) for key in self.tags}
+        attrs = {tag_name(key): tags.get(tag_name(key)) for key in self.tags}
 
         bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
 
@@ -124,3 +135,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
         table = pyarrow.Table.from_pylist(self.chunk, schema=self.schema)
         self.writer.write_table(table)
         self.chunk = []
+
+
+def tag_name(tag_def) -> str:
+    return tag_def if isinstance(tag_def, str) else tag_def[0]
