@@ -8,6 +8,9 @@ class HighwaysWriter(GeoParquetWriter):
         "highway",
         "service",
         "crossing",
+        "cycleway",
+        "cycleway:left",
+        "cycleway:right",
         "footway",
         "construction",
         # identifiers
