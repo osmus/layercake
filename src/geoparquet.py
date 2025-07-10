@@ -86,7 +86,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
             metadata=base_metadata,
         )
 
-        self.writer = pyarrow.parquet.ParquetWriter(filename, self.schema)
+        self.writer = pyarrow.parquet.ParquetWriter(filename, self.schema, compression='zstd')
         self.chunk = []
         self.wkbfactory = osmium.geom.WKBFactory()
 
