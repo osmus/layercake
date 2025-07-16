@@ -18,7 +18,8 @@ COPY (
 )
 TO '$2' (
     FORMAT PARQUET,
-    COMPRESSION ZSTD
+    COMPRESSION ZSTD,
+    COMPRESSION_LEVEL 10
     -- TBD: Partitioning; row group size by bytes?
 );
 EOF
