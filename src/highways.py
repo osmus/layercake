@@ -11,6 +11,9 @@ class HighwaysWriter(GeoParquetWriter):
         ("highway", pyarrow.string()),
         ("service", pyarrow.string()),
         ("crossing", pyarrow.string()),
+        ("cycleway", pyarrow.string()),
+        ("cycleway:left", pyarrow.string()),
+        ("cycleway:right", pyarrow.string()),
         ("footway", pyarrow.string()),
         ("construction", pyarrow.string()),
         # identifiers
