@@ -17,7 +17,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
     their own tag sets and filtering logic.
     """
 
-    # A set of tag_columns that the writer is interested in.
+    # A set of OSM tags that the writer is interested in.
     # Subclasses MUST add these (or you'll trigger a runtime assertion).
     # Filters are OR'd together across a processing run.
     # Objects will match if they contain a tag that ANY writer is interested in.
