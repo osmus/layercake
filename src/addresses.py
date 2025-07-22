@@ -1,46 +1,50 @@
 import sys
 
+import pyarrow
 from osmium.osm import OSMObject, Relation, TagList
 from .geoparquet import GeoParquetWriter
 
 
 class AddressesWriter(GeoParquetWriter):
-    TAGS = [
-        "addr:housenumber",
-        "addr:housename",
+    TAG_COLUMNS = [
+        ("addr:housenumber", pyarrow.string()),
+        ("addr:housename", pyarrow.string()),
         # Conscription, street, and provisional numbers for Czechia
-        "addr:conscriptionnumber",
-        "addr:streetnumber",
-        "addr:provisionalnumber",
-        "addr:unit",
-        # TODO: Localized street names??
-        "addr:street",
+        ("addr:conscriptionnumber", pyarrow.string()),
+        ("addr:streetnumber", pyarrow.string()),
+        ("addr:provisionalnumber", pyarrow.string()),
+        ("addr:unit", pyarrow.string()),
+        # TODO: Localized street names?? pyarrow.string()),
+        ("addr:street", pyarrow.string()),
         # UK-specific streets
-        "naptan:Street",
+        ("naptan:Street", pyarrow.string()),
         # Not all addresses have a street; see https://wiki.openstreetmap.org/wiki/Key:addr:place
-        "addr:place",
-        "addr:city",
-        "addr:postcode",
-        "addr:hamlet",
-        "addr:district",
-        "addr:suburb",
+        ("addr:place", pyarrow.string()),
+        ("addr:city", pyarrow.string()),
+        ("addr:postcode", pyarrow.string()),
+        ("addr:hamlet", pyarrow.string()),
+        ("addr:district", pyarrow.string()),
+        ("addr:suburb", pyarrow.string()),
         # Typically used in Japan
-        "addr:neighbourhood",
-        "addr:quarter",
-        "addr:block_number",
+        ("addr:neighbourhood", pyarrow.string()),
+        ("addr:quarter", pyarrow.string()),
+        ("addr:block_number", pyarrow.string()),
+        # Not machine-readable, but maybe useful to some?
+        ("addr:full", pyarrow.string()),
         # Typically a tagging error for addresses
-        "postal_code",
+        ("postal_code", pyarrow.string()),
         # TODO: Entrance tags, probably? Seems useful for geocoding...
         # TODO: Is this an "address" that we'd want in this layer? https://wiki.openstreetmap.org/wiki/Key:nohousenumber
-        # "nohousenumber",
-        "building",
-        "name"
+        # If so, we'll need to modify FILTERS
+        # ("nohousenumber", pyarrow.string()),
+        ("building", pyarrow.string()),
+        ("name", pyarrow.string()),
     ]
 
     FILTERS = {"addr:housenumber", "addr:housename", "type"}
 
     def __init__(self, filename):
-        super().__init__(filename, self.TAGS)
+        super().__init__(filename, self.TAG_COLUMNS)
 
         # TODO: Decide what we do with things like https://www.openstreetmap.org/relation/18131322#map=19/48.828354/2.537284&layers=PN
         # which have an `addr:housenumber` but do NOT have a street, place, etc. (directly or as part of a parent relation)
@@ -61,7 +65,7 @@ class AddressesWriter(GeoParquetWriter):
             #   (OSM Wiki estimated that only ~5% of global addresses are tagged this way several years ago.)
             self.house_number_node_cache[o.id] = (
                 self.wkbfactory.create_point(o),
-                {tag.k: tag.v for tag in o.tags}
+                {tag.k: tag.v for tag in o.tags},
             )
             return
         elif not is_address(o):
@@ -80,7 +84,7 @@ class AddressesWriter(GeoParquetWriter):
                 self.house_number_area_cache[o.orig_id()] = (
                     "way" if o.from_way() else "relation",
                     self.wkbfactory.create_multipolygon(o),
-                    {tag.k: tag.v for tag in o.tags}
+                    {tag.k: tag.v for tag in o.tags},
                 )
             except RuntimeError as e:
                 print(e, file=sys.stderr)
@@ -106,7 +110,11 @@ class AddressesWriter(GeoParquetWriter):
         ):
             return
 
-        member_addresses = [member for member in o.members if member.role in {"house", "address", "addr:houselink"}]
+        member_addresses = [
+            member
+            for member in o.members
+            if member.role in {"house", "address", "addr:houselink"}
+        ]
         if member_addresses:
             # TODO: Handle name:xx tags for language-specific names?
             name = o.tags["name"]
@@ -140,7 +148,9 @@ class AddressesWriter(GeoParquetWriter):
                         tags["addr:street"] = name
                         self.append(area_type, member.ref, tags, geom)
                 else:
-                    print(f"WARNING: Unexpected relation member type: {member.type} of relation {o.id}")
+                    print(
+                        f"WARNING: Unexpected relation member type: {member.type} of relation {o.id}"
+                    )
 
 
 def is_address(o: OSMObject) -> bool:
