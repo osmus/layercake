@@ -1,51 +1,54 @@
 import sys
+
+import pyarrow
+
 from .geoparquet import GeoParquetWriter
 
 
 class HighwaysWriter(GeoParquetWriter):
-    TAGS = [
+    TAG_COLUMNS = [
         # type and subtypes
-        "highway",
-        "service",
-        "crossing",
-        "cycleway",
-        "cycleway:left",
-        "cycleway:right",
-        "footway",
-        "construction",
+        ("highway", pyarrow.string()),
+        ("service", pyarrow.string()),
+        ("crossing", pyarrow.string()),
+        ("cycleway", pyarrow.string()),
+        ("cycleway:left", pyarrow.string()),
+        ("cycleway:right", pyarrow.string()),
+        ("footway", pyarrow.string()),
+        ("construction", pyarrow.string()),
         # identifiers
-        "name",
-        "ref",
+        ("name", pyarrow.string()),
+        ("ref", pyarrow.string()),
         # physical properties
-        "bridge",
-        "covered",
-        "lanes",
-        "layer",
-        "lit",
-        "sidewalk",
-        "smoothness",
-        "surface",
-        "tracktype",
-        "tunnel",
-        "wheelchair",
-        "width",
+        ("bridge", pyarrow.string()),
+        ("covered", pyarrow.string()),
+        ("lanes", pyarrow.string()),
+        ("layer", pyarrow.string()),
+        ("lit", pyarrow.string()),
+        ("sidewalk", pyarrow.string()),
+        ("smoothness", pyarrow.string()),
+        ("surface", pyarrow.string()),
+        ("tracktype", pyarrow.string()),
+        ("tunnel", pyarrow.string()),
+        ("wheelchair", pyarrow.string()),
+        ("width", pyarrow.string()),
         # access and restrictions
-        "access",
-        "bicycle",
-        "bus",
-        "foot",
-        "hgv",
-        "maxspeed",
-        "motor_vehicle",
-        "motorcycle",
-        "oneway",
-        "toll",
+        ("access", pyarrow.string()),
+        ("bicycle", pyarrow.string()),
+        ("bus", pyarrow.string()),
+        ("foot", pyarrow.string()),
+        ("hgv", pyarrow.string()),
+        ("maxspeed", pyarrow.string()),
+        ("motor_vehicle", pyarrow.string()),
+        ("motorcycle", pyarrow.string()),
+        ("oneway", pyarrow.string()),
+        ("toll", pyarrow.string()),
     ]
 
     FILTERS = {"highway"}
 
     def __init__(self, filename):
-        super().__init__(filename, self.TAGS)
+        super().__init__(filename, self.TAG_COLUMNS)
 
     def node(self, o):
         if "highway" not in o.tags:
