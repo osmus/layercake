@@ -1,44 +1,47 @@
 import sys
+
+import pyarrow
+
 from .geoparquet import GeoParquetWriter
 
 
 class BuildingsWriter(GeoParquetWriter):
-    TAGS = [
+    TAG_COLUMNS = [
         # building type and properties
-        "building",
-        "building:levels",
-        "building:flats",
-        "building:material",
-        "building:colour",
-        "building:part",
-        "building:use",
+        ("building", pyarrow.string()),
+        ("building:levels", pyarrow.string()),
+        ("building:flats", pyarrow.string()),
+        ("building:material", pyarrow.string()),
+        ("building:colour", pyarrow.string()),
+        ("building:part", pyarrow.string()),
+        ("building:use", pyarrow.string()),
         # name, address, and other identifiers
-        "name",
-        "addr:housenumber",
-        "addr:street",
-        "addr:city",
-        "addr:postcode",
-        "website",
-        "wikipedia",
-        "wikidata",
+        ("name", pyarrow.string()),
+        ("addr:housenumber", pyarrow.string()),
+        ("addr:street", pyarrow.string()),
+        ("addr:city", pyarrow.string()),
+        ("addr:postcode", pyarrow.string()),
+        ("website", pyarrow.string()),
+        ("wikipedia", pyarrow.string()),
+        ("wikidata", pyarrow.string()),
         # physical properties
-        "height",
-        "roof:shape",
-        "roof:levels",
-        "roof:colour",
-        "roof:material",
-        "roof:orientation",
-        "roof:height",
-        "start_date",
+        ("height", pyarrow.string()),
+        ("roof:shape", pyarrow.string()),
+        ("roof:levels", pyarrow.string()),
+        ("roof:colour", pyarrow.string()),
+        ("roof:material", pyarrow.string()),
+        ("roof:orientation", pyarrow.string()),
+        ("roof:height", pyarrow.string()),
+        ("start_date", pyarrow.string()),
         # access and restrictions
-        "access",
-        "wheelchair",
+        ("access", pyarrow.string()),
+        ("wheelchair", pyarrow.string()),
     ]
 
     FILTERS = {"building"}
 
     def __init__(self, filename):
-        super().__init__(filename, self.TAGS)
+        super().__init__(filename, self.TAG_COLUMNS)
 
     def area(self, o):
         if "building" not in o.tags:
