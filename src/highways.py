@@ -6,7 +6,7 @@ from .geoparquet import GeoParquetWriter
 
 
 class HighwaysWriter(GeoParquetWriter):
-    TAG_COLUMNS = [
+    COLUMNS = [
         # type and subtypes
         ("highway", pyarrow.string()),
         ("service", pyarrow.string()),
@@ -47,15 +47,12 @@ class HighwaysWriter(GeoParquetWriter):
 
     FILTERS = {"highway"}
 
-    def __init__(self, filename):
-        super().__init__(filename, self.TAG_COLUMNS)
-
     def node(self, o):
         if "highway" not in o.tags:
             return
 
         try:
-            self.append("node", o.id, o.tags, self.wkbfactory.create_point(o))
+            self.append("node", o.id, self.columns(o.tags), self.wkbfactory.create_point(o))
         except RuntimeError as e:
             print(e, file=sys.stderr)
 
@@ -69,7 +66,7 @@ class HighwaysWriter(GeoParquetWriter):
             return
 
         try:
-            self.append("way", o.id, o.tags, self.wkbfactory.create_linestring(o))
+            self.append("way", o.id, self.columns(o.tags), self.wkbfactory.create_linestring(o))
         except RuntimeError as e:
             print(e, file=sys.stderr)
 
@@ -86,8 +83,11 @@ class HighwaysWriter(GeoParquetWriter):
             self.append(
                 "way" if o.from_way() else "relation",
                 o.orig_id(),
-                o.tags,
+                self.columns(o.tags),
                 self.wkbfactory.create_multipolygon(o),
             )
         except RuntimeError as e:
             print(e, file=sys.stderr)
+
+    def columns(self, tags):
+        return {key: tags.get(key) for (key, _) in self.COLUMNS}

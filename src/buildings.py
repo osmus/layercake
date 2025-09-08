@@ -6,7 +6,7 @@ from .geoparquet import GeoParquetWriter
 
 
 class BuildingsWriter(GeoParquetWriter):
-    TAG_COLUMNS = [
+    COLUMNS = [
         # building type and properties
         ("building", pyarrow.string()),
         ("building:levels", pyarrow.string()),
@@ -40,9 +40,6 @@ class BuildingsWriter(GeoParquetWriter):
 
     FILTERS = {"building"}
 
-    def __init__(self, filename):
-        super().__init__(filename, self.TAG_COLUMNS)
-
     def area(self, o):
         if "building" not in o.tags:
             return
@@ -51,8 +48,11 @@ class BuildingsWriter(GeoParquetWriter):
             self.append(
                 "way" if o.from_way() else "relation",
                 o.orig_id(),
-                o.tags,
+                self.columns(o.tags),
                 self.wkbfactory.create_multipolygon(o),
             )
         except RuntimeError as e:
             print(e, file=sys.stderr)
+
+    def columns(self, tags):
+        return {key: tags.get(key) for (key, _) in self.COLUMNS}

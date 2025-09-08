@@ -17,7 +17,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
     their own tag sets and filtering logic.
     """
 
-    # A set of tag_columns that the writer is interested in.
+    # A set of OSM tags that the writer is interested in.
     # Subclasses MUST add these (or you'll trigger a runtime assertion).
     # Filters are OR'd together across a processing run.
     # Objects will match if they contain a tag that ANY writer is interested in.
@@ -25,10 +25,15 @@ class GeoParquetWriter(osmium.SimpleHandler):
     # so handlers should implement their own checks.
     FILTERS: typing.Set[str] = set()
 
+    # List of columns that the writer will write. Each entry is a tuple
+    # of (column name, PyArrow type), e.g. ("name", pyarrow.string()).
+    # When calling append(), you should pass a dictionary of attributes
+    # that matches this schema.
+    COLUMNS: typing.List[typing.Tuple[str, pyarrow.Schema]] = []
+
     def __init__(
         self,
         filename,
-        tag_columns: typing.Iterable[typing.Tuple[str, pyarrow.Schema]],
         schema_metadata=None,
         row_group_size=100_000,
     ):
@@ -36,14 +41,11 @@ class GeoParquetWriter(osmium.SimpleHandler):
 
         Args:
             filename: Path to the output Parquet file
-            tag_columns: A list of column definitions. Each column is a tuple containing
-                a column name (typically the OSM tag name) and a PyArrow schema.
             schema_metadata: Optional additional metadata to include in the schema
             row_group_size: The number of rows to write per group
         """
         super().__init__()
         self.filename = filename
-        self.tag_columns = tag_columns
         self.row_group_size = row_group_size
 
         # Create the schema
@@ -88,7 +90,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
                 ("id", pyarrow.int64()),
                 (
                     "tags",
-                    pyarrow.struct(self.tag_columns),
+                    pyarrow.struct(self.COLUMNS),
                 ),
                 ("bbox", bbox_schema),
                 ("geometry", pyarrow.binary()),
@@ -96,7 +98,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
             metadata=base_metadata,
         )
 
-        self.writer = pyarrow.parquet.ParquetWriter(filename, self.schema, compression='zstd')
+        self.writer = pyarrow.parquet.ParquetWriter(filename, self.schema, compression="zstd")
         self.chunk = []
         self.wkbfactory = osmium.geom.WKBFactory()
 
@@ -106,25 +108,21 @@ class GeoParquetWriter(osmium.SimpleHandler):
             self.flush()
         self.writer.close()
 
-    def append(self, type, id, tags, wkb_hex):
+    def append(self, type, id, attrs, wkb_hex):
         """Append a record to the current chunk.
 
         Args:
             type: OSM element type ('node', 'way', or 'relation')
             id: OSM element ID
-            tags: OSM tag_columns dictionary
+            attrs: additional columns to write; must match COLUMNS schema
             wkb_hex: WKB geometry in hex format
         """
         geom = shapely.wkb.loads(wkb_hex, hex=True)
         wkb = binascii.unhexlify(wkb_hex)
 
-        attrs = {tag_name(key): tags.get(tag_name(key)) for key in self.tag_columns}
-
         bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
 
-        self.chunk.append(
-            {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
-        )
+        self.chunk.append({"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb})
 
         if len(self.chunk) >= self.row_group_size:
             self.flush()
@@ -134,7 +132,3 @@ class GeoParquetWriter(osmium.SimpleHandler):
         table = pyarrow.Table.from_pylist(self.chunk, schema=self.schema)
         self.writer.write_table(table)
         self.chunk = []
-
-
-def tag_name(tag_def) -> str:
-    return tag_def if isinstance(tag_def, str) else tag_def[0]
