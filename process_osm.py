@@ -5,10 +5,12 @@ import argparse
 import osmium
 
 from src.highways import HighwaysWriter
+from src.boundaries import BoundariesWriter
 from src.buildings import BuildingsWriter
 
 LAYERS = {
     "highways": HighwaysWriter,
+    "boundaries": BoundariesWriter,
     "buildings": BuildingsWriter,
 }
 
