@@ -17,6 +17,7 @@ class BoundariesWriter(GeoParquetWriter):
         ("ISO3166-2", pyarrow.string()),
         ("ISO3166-1:alpha2", pyarrow.string()),
         ("ISO3166-1:alpha3", pyarrow.string()),
+        ("wikidata", pyarrow.string()),
     ]
 
     FILTERS = {"boundary"}
