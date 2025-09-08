@@ -1,12 +1,12 @@
 import sys
 
 import pyarrow
-from osmium.osm import OSMObject, Relation, TagList
+from osmium.osm import OSMObject, Relation
 from .geoparquet import GeoParquetWriter
 
 
 class AddressesWriter(GeoParquetWriter):
-    TAG_COLUMNS = [
+    COLUMNS = [
         ("addr:housenumber", pyarrow.string()),
         ("addr:housename", pyarrow.string()),
         # Conscription, street, and provisional numbers for Czechia
@@ -43,8 +43,8 @@ class AddressesWriter(GeoParquetWriter):
 
     FILTERS = {"addr:housenumber", "addr:housename", "type"}
 
-    def __init__(self, filename):
-        super().__init__(filename, self.TAG_COLUMNS)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         # TODO: Decide what we do with things like https://www.openstreetmap.org/relation/18131322#map=19/48.828354/2.537284&layers=PN
         # which have an `addr:housenumber` but do NOT have a street, place, etc. (directly or as part of a parent relation)
@@ -72,7 +72,9 @@ class AddressesWriter(GeoParquetWriter):
             return
 
         try:
-            self.append("node", o.id, o.tags, self.wkbfactory.create_point(o))
+            self.append(
+                "node", o.id, self.columns(o.tags), self.wkbfactory.create_point(o)
+            )
         except RuntimeError as e:
             print(e, file=sys.stderr)
 
@@ -80,21 +82,18 @@ class AddressesWriter(GeoParquetWriter):
     def area(self, o):
         if is_house_number_or_name(o) and not is_address(o):
             # See comment above on the node cache
-            try:
-                self.house_number_area_cache[o.orig_id()] = (
-                    "way" if o.from_way() else "relation",
-                    self.wkbfactory.create_multipolygon(o),
-                    {tag.k: tag.v for tag in o.tags},
-                )
-            except RuntimeError as e:
-                print(e, file=sys.stderr)
+            self.house_number_area_cache[o.orig_id()] = (
+                "way" if o.from_way() else "relation",
+                self.wkbfactory.create_multipolygon(o),
+                {tag.k: tag.v for tag in o.tags},
+            )
         if not is_address(o):
             return
         try:
             self.append(
                 "way" if o.from_way() else "relation",
                 o.orig_id(),
-                o.tags,
+                self.columns(o.tags),
                 self.wkbfactory.create_multipolygon(o),
             )
         except RuntimeError as e:
@@ -152,24 +151,25 @@ class AddressesWriter(GeoParquetWriter):
                         f"WARNING: Unexpected relation member type: {member.type} of relation {o.id}"
                     )
 
+    def columns(self, tags):
+        return {key: tags.get(key) for (key, _) in self.COLUMNS}
+
 
 def is_address(o: OSMObject) -> bool:
     # Must have some identifier (number/name) and some sort of location identifier
     # (usually a street).
-    tags = o.tags
     return is_house_number_or_name(o) and (
-        "addr:street" in tags
+        "addr:street" in o.tags
         # Some places use this instead of a street name
-        or "addr:place" in tags
+        or "addr:place" in o.tags
         # UK import
-        or "naptan:Street" in tags
+        or "naptan:Street" in o.tags
         # Usually addr:neighbourhood or addr:quarter are used instead of addr:street in Japan.
         # This also shows up in a few other places though too, like France.
-        or "addr:neighbourhood" in tags
-        or "addr:quarter" in tags
+        or "addr:neighbourhood" in o.tags
+        or "addr:quarter" in o.tags
     )
 
 
 def is_house_number_or_name(o: OSMObject) -> bool:
-    tags = o.tags
-    return "addr:housenumber" in tags or "addr:housename" in tags
+    return "addr:housenumber" in o.tags or "addr:housename" in o.tags
