@@ -42,3 +42,9 @@ Feel free to request new columns (tags) to add to existing layers, or simply mak
 ## Reporting problems
 
 If you find an issue with Layercake (such as certain features being processed incorretly), please open a bug on GitHub. If there's an error _in the data itself_, that is most likely a problem with the upstream OpenStreetMap data. You can check the data yourself on [openstreetmap.org](https://openstreetmap.org), and edit the map to fix the issue if it hasn't already been fixed.
+
+## General PR guidelines
+
+When sending a PR, please include a clear description of what it does. This helps the maintainers review it efficiently.
+
+We don't currently enforce style checks in CI, but do periodically format the codebase with [`ruff`](https://docs.astral.sh/ruff/). If you do the same, it will reduce the chance of merge conflicts.
