@@ -4,9 +4,9 @@ import pyarrow
 from .geoparquet import GeoParquetWriter
 
 
-class PlacesWriter(GeoParquetWriter):
+class SettlementsWriter(GeoParquetWriter):
     """
-    The places layer contains point geometries representing named human
+    The settlements layer contains point geometries representing named human
     settlements (cities, towns, villages) and parts of settlements (boroughs,
     qaurters, neighborhoods) from OSM.
     """
