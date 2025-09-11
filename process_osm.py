@@ -6,10 +6,12 @@ import osmium
 
 from src.highways import HighwaysWriter
 from src.buildings import BuildingsWriter
+from src.addresses import AddressesWriter
 
 LAYERS = {
     "highways": HighwaysWriter,
     "buildings": BuildingsWriter,
+    "addresses": AddressesWriter,
 }
 
 
