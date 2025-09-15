@@ -14,6 +14,7 @@ class BoundariesWriter(GeoParquetWriter):
         ("admin_level", pyarrow.string()),
         ("boundary", pyarrow.string()),
         ("place", pyarrow.string()),
+        ("border_type", pyarrow.string()),
         ("ISO3166-2", pyarrow.string()),
         ("ISO3166-1:alpha2", pyarrow.string()),
         ("ISO3166-1:alpha3", pyarrow.string()),
@@ -25,6 +26,7 @@ class BoundariesWriter(GeoParquetWriter):
     def area(self, o):
         if o.tags.get("boundary") not in {
             "administrative",
+            "aboriginal_lands",
             "maritime",
             "disputed",
             "place",
