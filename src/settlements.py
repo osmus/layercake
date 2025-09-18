@@ -21,7 +21,7 @@ class SettlementsWriter(GeoParquetWriter):
         ("official_names", pyarrow.map_(pyarrow.string(), pyarrow.string())),
         ("wikidata", pyarrow.string()),
         ("wikipedia", pyarrow.string()),
-        ("population", pyarrow.uint32()),
+        ("population", pyarrow.uint64()),
     ]
 
     FILTERS = {"place"}
