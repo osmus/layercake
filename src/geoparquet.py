@@ -98,7 +98,9 @@ class GeoParquetWriter(osmium.SimpleHandler):
             metadata=base_metadata,
         )
 
-        self.writer = pyarrow.parquet.ParquetWriter(filename, self.schema, compression="zstd")
+        self.writer = pyarrow.parquet.ParquetWriter(
+            filename, self.schema, compression="zstd"
+        )
         self.chunk = []
         self.wkbfactory = osmium.geom.WKBFactory()
 
@@ -122,7 +124,9 @@ class GeoParquetWriter(osmium.SimpleHandler):
 
         bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
 
-        self.chunk.append({"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb})
+        self.chunk.append(
+            {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
+        )
 
         if len(self.chunk) >= self.row_group_size:
             self.flush()

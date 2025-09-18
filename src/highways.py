@@ -52,7 +52,9 @@ class HighwaysWriter(GeoParquetWriter):
             return
 
         try:
-            self.append("node", o.id, self.columns(o.tags), self.wkbfactory.create_point(o))
+            self.append(
+                "node", o.id, self.columns(o.tags), self.wkbfactory.create_point(o)
+            )
         except RuntimeError as e:
             print(e, file=sys.stderr)
 
@@ -66,7 +68,9 @@ class HighwaysWriter(GeoParquetWriter):
             return
 
         try:
-            self.append("way", o.id, self.columns(o.tags), self.wkbfactory.create_linestring(o))
+            self.append(
+                "way", o.id, self.columns(o.tags), self.wkbfactory.create_linestring(o)
+            )
         except RuntimeError as e:
             print(e, file=sys.stderr)
 
