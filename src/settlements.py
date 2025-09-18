@@ -1,5 +1,6 @@
 import sys
 import pyarrow
+from osmium.osm import TagList
 
 from .geoparquet import GeoParquetWriter
 from .helpers import tags_with_prefix
@@ -59,7 +60,7 @@ class SettlementsWriter(GeoParquetWriter):
         return {key: column(key, tags) for (key, _) in self.COLUMNS}
 
 
-def column(column_name, tags):
+def column(column_name: str, tags: TagList):
     """
     Using the tags for a given OSM element, return the appropriate value
     for the specified column in the output dataset.
