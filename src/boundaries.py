@@ -9,6 +9,8 @@ from .helpers import tags_with_prefix, split_multi_value_field
 
 class BoundariesWriter(GeoParquetWriter):
     COLUMNS = [
+        ("boundary", pyarrow.string()),
+        ("admin_level", pyarrow.string()),
         ("name", pyarrow.list_(pyarrow.string())),
         ("names", pyarrow.map_(pyarrow.string(), pyarrow.list_(pyarrow.string()))),
         ("official_name", pyarrow.list_(pyarrow.string())),
@@ -16,12 +18,9 @@ class BoundariesWriter(GeoParquetWriter):
             "official_names",
             pyarrow.map_(pyarrow.string(), pyarrow.list_(pyarrow.string())),
         ),
-        ("int_name", pyarrow.list_(pyarrow.string())),
         ("alt_name", pyarrow.list_(pyarrow.string())),
         ("alt_names", pyarrow.map_(pyarrow.string(), pyarrow.list_(pyarrow.string()))),
-        ("type", pyarrow.string()),
-        ("admin_level", pyarrow.string()),
-        ("boundary", pyarrow.string()),
+        ("int_name", pyarrow.list_(pyarrow.string())),
         # Border type tagging is a fairly deep rabbit hole...
         # We may consider harmonizing other tags like admin_type:XX
         # in the future. See https://github.com/osmus/layercake/pull/18#discussion_r2347797702
