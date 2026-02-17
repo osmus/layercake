@@ -48,6 +48,12 @@ class GeoParquetWriter(osmium.SimpleHandler):
         self.filename = filename
         self.row_group_size = row_group_size
 
+        # Check for reserved column names
+        reserved_names = {"type", "id", "bbox", "geometry"}
+        column_names = {name for name, _ in self.COLUMNS}
+        conflicts = column_names & reserved_names
+        assert not conflicts, f"Column names {conflicts} in schema {self.__class__.__name__} conflict with reserved names"
+
         # Create the schema
         bbox_schema = pyarrow.struct(
             [
@@ -88,10 +94,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
             [
                 ("type", pyarrow.string()),
                 ("id", pyarrow.int64()),
-                (
-                    "tags",
-                    pyarrow.struct(self.COLUMNS),
-                ),
+                *self.COLUMNS,
                 ("bbox", bbox_schema),
                 ("geometry", pyarrow.binary()),
             ],
@@ -125,7 +128,7 @@ class GeoParquetWriter(osmium.SimpleHandler):
         bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
 
         self.chunk.append(
-            {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
+            {"type": type, "id": id, **attrs, "bbox": bbox, "geometry": wkb}
         )
 
         if len(self.chunk) >= self.row_group_size:
