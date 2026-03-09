@@ -1,13 +1,13 @@
-FROM debian:12
+FROM alpine:3.23
 
-RUN apt update && apt install -y curl python3 python3-pip python3-venv python-is-python3
-RUN curl https://install.duckdb.org | sh
-RUN /root/.duckdb/cli/latest/duckdb -c 'INSTALL SPATIAL'
+RUN apk add curl libosmium g++ make cmake python3 python3-dev py3-pip py3-virtualenv py3-pyarrow zlib-dev expat-dev bzip2-dev lz4-dev
+RUN apk add duckdb --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+RUN duckdb -c 'INSTALL SPATIAL'
 
 COPY . /run/layercake
 WORKDIR /run/layercake
 
-RUN python -m venv venv
+RUN python -m venv --system-site-packages venv
 RUN venv/bin/pip install -r requirements.txt
 
 ENTRYPOINT ["/run/layercake/entrypoint.sh"]

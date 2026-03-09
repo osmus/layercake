@@ -2,9 +2,6 @@
 
 set -eu
 
-# add duckdb cli to path
-export PATH='/root/.duckdb/cli/latest':$PATH
-
 # activate python virtual environment
 . venv/bin/activate
 
