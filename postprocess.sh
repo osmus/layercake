@@ -1,7 +1,5 @@
 #!/bin/sh
 
-echo $@
-
 duckdb << EOF | cat # workaround for https://github.com/duckdb/duckdb/issues/21253
 LOAD SPATIAL;
 
