@@ -3,7 +3,7 @@ import pyarrow
 from osmium.osm import TagList
 
 from .geoparquet import GeoParquetWriter
-from .helpers import tags_with_prefix
+from .helpers import tags_with_prefix, split_multi_value_field
 
 
 class SettlementsWriter(GeoParquetWriter):
@@ -15,11 +15,11 @@ class SettlementsWriter(GeoParquetWriter):
 
     COLUMNS = [
         ("place", pyarrow.string()),
-        ("name", pyarrow.string()),
+        ("name", pyarrow.list_(pyarrow.string())),
         ("names", pyarrow.map_(pyarrow.string(), pyarrow.string())),
-        ("alt_name", pyarrow.string()),
+        ("alt_name", pyarrow.list_(pyarrow.string())),
         ("alt_names", pyarrow.map_(pyarrow.string(), pyarrow.string())),
-        ("official_name", pyarrow.string()),
+        ("official_name", pyarrow.list_(pyarrow.string())),
         ("official_names", pyarrow.map_(pyarrow.string(), pyarrow.string())),
         ("wikidata", pyarrow.string()),
         ("wikipedia", pyarrow.string()),
@@ -71,6 +71,8 @@ def column(column_name: str, tags: TagList):
                 return int(tags.get("population"))
             except (TypeError, ValueError):
                 return None
+        case "name" | "alt_name" | "official_name":
+            return split_multi_value_field(tags.get(column_name))
         case "names" | "alt_names" | "official_names":
             return tags_with_prefix(f"{column_name[:-1]}:", tags)
         case _:
