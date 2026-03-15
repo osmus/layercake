@@ -6,7 +6,7 @@ import osmium
 import pyarrow
 import pyarrow.parquet
 import shapely
-import shapely.wkb
+
 
 
 class GeoParquetWriter(osmium.SimpleHandler):
@@ -101,12 +101,20 @@ class GeoParquetWriter(osmium.SimpleHandler):
         self.writer = pyarrow.parquet.ParquetWriter(
             filename, self.schema, compression="zstd"
         )
-        self.chunk = []
         self.wkbfactory = osmium.geom.WKBFactory()
+        self._tag_names = [key for key, _ in self.COLUMNS]
+        self._reset_buffers()
+
+    def _reset_buffers(self):
+        self._col_type = []
+        self._col_id = []
+        self._col_tags = []
+        self._col_wkb = []
+        self._count = 0
 
     def finish(self):
         """Finish writing the file."""
-        if self.chunk:
+        if self._count:
             self.flush()
         self.writer.close()
 
@@ -119,20 +127,53 @@ class GeoParquetWriter(osmium.SimpleHandler):
             attrs: additional columns to write; must match COLUMNS schema
             wkb_hex: WKB geometry in hex format
         """
-        geom = shapely.wkb.loads(wkb_hex, hex=True)
-        wkb = binascii.unhexlify(wkb_hex)
+        self._col_type.append(type)
+        self._col_id.append(id)
+        self._col_tags.append(attrs)
+        self._col_wkb.append(binascii.unhexlify(wkb_hex))
 
-        bbox = dict(zip(["xmin", "ymin", "xmax", "ymax"], shapely.bounds(geom)))
-
-        self.chunk.append(
-            {"type": type, "id": id, "tags": attrs, "bbox": bbox, "geometry": wkb}
-        )
-
-        if len(self.chunk) >= self.row_group_size:
+        self._count += 1
+        if self._count >= self.row_group_size:
             self.flush()
 
     def flush(self):
-        """Write the current chunk to the Parquet file."""
-        table = pyarrow.Table.from_pylist(self.chunk, schema=self.schema)
+        """Write the current chunk to the Parquet file.
+
+        Builds the pyarrow table from columnar buffers and computes
+        bounding boxes in bulk.
+        """
+        # Bbox via vectorized shapely
+        geoms = shapely.from_wkb(self._col_wkb)
+        bounds = shapely.bounds(geoms)
+
+        bbox_array = pyarrow.StructArray.from_arrays(
+            [
+                pyarrow.array(bounds[:, 0], type=pyarrow.float32()),
+                pyarrow.array(bounds[:, 1], type=pyarrow.float32()),
+                pyarrow.array(bounds[:, 2], type=pyarrow.float32()),
+                pyarrow.array(bounds[:, 3], type=pyarrow.float32()),
+            ],
+            names=["xmin", "ymin", "xmax", "ymax"],
+        )
+
+        # Build per-column tag arrays from the collected dicts
+        tag_arrays = []
+        for key, pa_type in self.COLUMNS:
+            tag_arrays.append(
+                pyarrow.array([t.get(key) for t in self._col_tags], type=pa_type)
+            )
+        tags_array = pyarrow.StructArray.from_arrays(tag_arrays, names=self._tag_names)
+
+        table = pyarrow.Table.from_arrays(
+            [
+                pyarrow.array(self._col_type, type=pyarrow.string()),
+                pyarrow.array(self._col_id, type=pyarrow.int64()),
+                tags_array,
+                bbox_array,
+                pyarrow.array(self._col_wkb, type=pyarrow.binary()),
+            ],
+            schema=self.schema,
+        )
+
         self.writer.write_table(table)
-        self.chunk = []
+        self._reset_buffers()
