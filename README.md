@@ -17,7 +17,7 @@ This repository contains the code that is used to generate the extracts, which a
 
 These goals come with some trade-offs:
 - Layercake inherits OSM's tag schema, which is complex and can even be ambiguous. Users will need to think about [synonymous tags](https://wiki.openstreetmap.org/wiki/Synonymous_tags), [skunked tags](https://wiki.openstreetmap.org/wiki/Skunked_tag), and other irregularities when interpreting the data.
-- Layercake does not include any quality assurance checks, so it may contain typos, invalid values, and in rare cases vandalism.
+- Layercake also inherits any errors in OSM data. OpenStreetMap is maintained by volunteers around the world; it may contain typos, incorrect or outdated information, and in rare cases vandalism. Layercake does not apply any quality assurance checks or make any attempt to fix or flag suspicious data.
 
 ## License
 
