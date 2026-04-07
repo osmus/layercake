@@ -2,11 +2,8 @@
 
 set -eu
 
-# activate python virtual environment
-. venv/bin/activate
-
 echo "Extracting feature layers from $1"
-python process_osm.py "$@"
+./process.sh "$@"
 
 for input_file in out/*.parquet; do
   echo "Sorting and compressing $input_file"
