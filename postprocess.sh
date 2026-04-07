@@ -13,10 +13,7 @@ COPY (
     FROM '$1'
     ORDER BY ST_Hilbert(
         geometry,
-        (
-            SELECT ST_Extent(ST_Extent_Agg(geometry))
-            FROM '$1'
-        )
+        ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90))
     )
 )
 TO '$2' (
