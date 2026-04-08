@@ -12,18 +12,16 @@ COPY (
   SELECT
     type,
     id,
-    {
-      place:            tags['place'],
-      name:             tags['name'],
-      names:            prefix_map('name:', tags),
-      alt_name:         tags['alt_name'],
-      alt_names:        prefix_map('alt_name:', tags),
-      official_name:    tags['official_name'],
-      official_names:   prefix_map('official_name:', tags),
-      wikidata:         tags['wikidata'],
-      wikipedia:        tags['wikipedia'],
-      population:       TRY_CAST(tags['population'] AS UBIGINT)
-    } AS tags,
+    tags['place']                           AS place,
+    tags['name']                            AS name,
+    prefix_map('name:', tags)               AS names,
+    tags['alt_name']                        AS alt_name,
+    prefix_map('alt_name:', tags)           AS alt_names,
+    tags['official_name']                   AS official_name,
+    prefix_map('official_name:', tags)      AS official_names,
+    tags['wikidata']                        AS wikidata,
+    tags['wikipedia']                       AS wikipedia,
+    TRY_CAST(tags['population'] AS UBIGINT) AS population,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
