@@ -1,17 +1,19 @@
 #!/bin/sh
 
-duckdb << EOF | cat # workaround for https://github.com/duckdb/duckdb/issues/21253
-LOAD SPATIAL;
+# Spatially sorts a GeoParquet file by Hilbert curve and compresses with ZSTD.
+# Usage: postprocess.sh <input.parquet> <output.parquet>
+
+set -eu
+
+duckdb << EOF | cat
+LOAD spatial;
 
 COPY (
     SELECT *
     FROM '$1'
     ORDER BY ST_Hilbert(
         geometry,
-        (
-            SELECT ST_Extent(ST_Extent_Agg(geometry))
-            FROM '$1'
-        )
+        ST_Extent(ST_MakeEnvelope(-180, -90, 180, 90))
     )
 )
 TO '$2' (

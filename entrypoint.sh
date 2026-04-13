@@ -2,14 +2,8 @@
 
 set -eu
 
-# add duckdb cli to path
-export PATH='/root/.duckdb/cli/latest':$PATH
-
-# activate python virtual environment
-. venv/bin/activate
-
 echo "Extracting feature layers from $1"
-python process_osm.py "$@"
+./process.sh "$@"
 
 for input_file in out/*.parquet; do
   echo "Sorting and compressing $input_file"
