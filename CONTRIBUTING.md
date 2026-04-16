@@ -4,10 +4,12 @@ Thanks for your interest in helping to improve Layercake. Here's some info on ho
 
 ## Project structure
 
-Layercake consists of few scripts which work together to read an `.osm.pbf` file, extract some elements, and write them out to GeoParquet files.
+Layercake consists of a few scripts which work together to read an `.osm.pbf` file, extract features into thematic layers, and write them out as GeoParquet files.
 
-- First, `process_osm.py` is run. It reads the OSM PBF file using [pyosmium](https://osmcode.org/pyosmium/), and writes output Parquet files using [pyarrow](https://arrow.apache.org/docs/python/index.html). Each layer is defined in a separate Handler class in the `src` directory (e.g `src/highways.py`). The Handler's job is to choose which OSM elements belong in the layer, and which tags to include on each feature.
-- Afterwards, `postprocess.sh` is run on each layer. This script uses [DuckDB](https://duckdb.org/) to sort and compress the parquet files, which improves query performance for users.
+- Each layer is defined as a SQL file in the `sql/` directory (e.g. `sql/highways.sql`). These SQL scripts are executed with [DuckDB](https://duckdb.org/), using the [duckdb-osmium](https://github.com/jake-low/duckdb-osmium/) extension to read OSM PBF input files and the [spatial](https://duckdb.org/docs/extensions/spatial/overview.html) extension to write GeoParquet files. Shared macros are defined in `sql/macros.sql`.
+- `process.sh` is a shell script that takes an input OSM PBF file and an output directory, and runs all of the SQL scripts to generate each layer (writing them to the output directory).
+- `postprocess.sh` is run on each layer's output. It uses DuckDB to spatially sort and compress the parquet files, which improves query performance for users.
+- `entrypoint.sh` ties these together: it runs `process.sh` and then `postprocess.sh` on each output file.
 
 ## Building Layercake data locally
 
@@ -23,9 +25,13 @@ $ podman run --rm \
 
 Alternately, you may wish to run Layercake directly (without a container). This is useful on systems like macOS where containers must be run in a Linux VM, causing significant overhead.
 
-To run Layercake directly, first install the necessary dependencies. Currently they are `python`, `duckdb`, and the Python packages listed in `requirements.txt`.
+To run Layercake directly, install [DuckDB](https://duckdb.org/) and then install the `spatial` and `osmium` extensions:
 
-Then, run `python process_osm.py`, specifying your input OSM PBF file and desired output directory. After that, you may optionally run `postprocess.sh` on each layer. See `entrypoint.sh` for an example of how to run these tools (the entrypoint script is what the above container runs by default).
+```
+$ duckdb -c 'INSTALL spatial; INSTALL osmium FROM community;'
+```
+
+Then run `process.sh`, specifying your input OSM PBF file and desired output directory. You can optionally pass flags to build only specific layers (e.g. `--buildings`, `--highways`). After that, you may optionally run `postprocess.sh` on each layer. See `entrypoint.sh` for an example of how to run these together.
 
 For development purposes, it's best to run Layercake on a small `.osm.pbf` file (like for a metropolitan area, a US State, or a small country), rather than on the entire planet. The former should take a few minutes; the latter might take many hours, depending on your hardware. Suitable extracts can be downloaded from [Geofabrik](https://download.geofabrik.de/) or from [slice.openstreetmap.us](https://slice.openstreetmap.us).
 
@@ -33,7 +39,7 @@ For development purposes, it's best to run Layercake on a small `.osm.pbf` file 
 
 Before working on a new layer definition, please discuss your idea with the maintainers, either on GitHub or in the `#layercake` channel on the OSM US Slack.
 
-To add a new layer, create a new GeoParquetWriter subclass (see existing layers for guidance), and then register it in the `LAYERS` dictionary in `process_osm.py`.
+To add a new layer, create a new SQL file in the `sql/` directory (see existing layers for guidance), and then add it to `process.sh`.
 
 ## Modifying existing layers
 
@@ -46,5 +52,3 @@ If you find an issue with Layercake (such as certain features being processed in
 ## General PR guidelines
 
 When sending a PR, please include a clear description of what it does. This helps the maintainers review it efficiently.
-
-We don't currently enforce style checks in CI, but do periodically format the codebase with [`ruff`](https://docs.astral.sh/ruff/). If you do the same, it will reduce the chance of merge conflicts.
