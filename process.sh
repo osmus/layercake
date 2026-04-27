@@ -4,6 +4,14 @@
 # using DuckDB with the osmium and spatial extensions.
 #
 # Usage: process.sh <input.osm.pbf> <output_dir> [--buildings] [--highways] ...
+#                   [--osmium-index-type=TYPE] [--duckdb-memory-limit=LIMIT]
+#
+# --osmium-index-type sets osmium's node location index type. The default
+# is 'flex_mem' which works well for both small and large extracts. For
+# full planet builds, use dense_file_array if you don't have enough RAM
+# to fit the entire index in memory.
+#
+# --duckdb-memory-limit sets DuckDB's memory_limit setting (e.g. '64GB')
 
 set -eu
 
@@ -16,6 +24,8 @@ shift 2
 # Parse optional layer flags
 BUILDINGS=0; HIGHWAYS=0; BOUNDARIES=0; SETTLEMENTS=0; PARKS=0
 ALL=1
+OSMIUM_INDEX_TYPE=""
+DUCKDB_MEMORY_LIMIT=""
 
 for arg in "$@"; do
   case $arg in
@@ -24,6 +34,8 @@ for arg in "$@"; do
     --boundaries)  BOUNDARIES=1; ALL=0 ;;
     --settlements) SETTLEMENTS=1; ALL=0 ;;
     --parks)       PARKS=1; ALL=0 ;;
+    --osmium-index-type=*)   OSMIUM_INDEX_TYPE="${arg#*=}" ;;
+    --duckdb-memory-limit=*) DUCKDB_MEMORY_LIMIT="${arg#*=}" ;;
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
   esac
 done
@@ -40,7 +52,12 @@ run_layer() {
   local name="$1"
   local output="${OUTPUT_DIR}/${name}.parquet"
   echo "Extracting ${name} layer"
-  cat "${SCRIPT_DIR}/sql/macros.sql" "${SCRIPT_DIR}/sql/${name}.sql" | \
+  {
+    cat "${SCRIPT_DIR}/sql/macros.sql"
+    [ -n "$DUCKDB_MEMORY_LIMIT" ] && echo "SET memory_limit = '${DUCKDB_MEMORY_LIMIT}';"
+    [ -n "$OSMIUM_INDEX_TYPE" ] && echo "SET osmium_index_type = '${OSMIUM_INDEX_TYPE}';"
+    cat "${SCRIPT_DIR}/sql/${name}.sql"
+  } | \
     sed "s|{{INPUT}}|${INPUT}|g; s|{{OUTPUT}}|${output}|g" | \
     duckdb --unsigned
 }

@@ -1,8 +1,6 @@
 LOAD osmium;
 LOAD spatial;
 
-SET memory_limit = '64GB';
-SET osmium_index_type = 'dense_file_array';
 
 -- Split a semicolon-delimited OSM tag value into a list of trimmed strings.
 -- See https://wiki.openstreetmap.org/wiki/Semi-colon_value_separator
