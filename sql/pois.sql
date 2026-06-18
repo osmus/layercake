@@ -10,7 +10,8 @@ COPY (
         tags['craft']      IS NOT NULL OR
         tags['education']  IS NOT NULL OR
         tags['healthcare'] IS NOT NULL OR
-        (tags['historic']  IS NOT NULL AND tags['historic'] != 'yes') OR
+        (tags['historic']  IS NOT NULL AND tags['historic'] != 'yes'
+                                       AND tags['historic'] != 'no') OR
         tags['leisure']    IS NOT NULL OR
         tags['office']     IS NOT NULL OR
         tags['playground'] IS NOT NULL OR
@@ -48,36 +49,35 @@ COPY (
     tags['brand']                            AS brand,
     tags['brand:wikidata']                   AS "brand:wikidata",
     tags['operator']                         AS operator,
+    tags['operator:wikidata']                AS "operator:wikidata",
     tags['phone']                            AS phone,
     tags['email']                            AS email,
     tags['website']                          AS website,
-    tags['url']                              AS url,
     tags['wikidata']                         AS wikidata,
     tags['wikipedia']                        AS wikipedia,
     tags['access']                           AS access,
     tags['bar']                              AS bar,
-    tags['bicycle']                          AS bicycle,
     tags['bicycle_parking']                  AS bicycle_parking,
     tags['building']                         AS building,
     tags['check_date']                       AS check_date,
-    tags['check_date:opening_hours']         AS "check_date:opening_hours",
+    prefix_map_split('check_date:', tags)    AS check_dates,
     tags['cuisine']                          AS cuisine,
+    prefix_map_split('food:', tags)          AS foods,
+    prefix_map_split('drink:', tags)         AS drinks,
+    prefix_map_split('diet:', tags)          AS diets,
     tags['denomination']                     AS denomination,
     tags['description']                      AS description,
-    tags['disused']                          AS disused,
+    prefix_map_split('disused:', tags)       AS disused_tags,
     tags['emergency']                        AS emergency,
     tags['fountain']                         AS fountain,
     tags['healthcare:speciality']            AS "healthcare:speciality",
     tags['heritage']                         AS heritage,
-    tags['image']                            AS image,
     tags['nursery']                          AS nursery,
-    tags['opening_date']                     AS opening_date,
     tags['opening_hours']                    AS opening_hours,
     tags['preschool']                        AS preschool,
     tags['recycling_type']                   AS recycling_type,
     tags['religion']                         AS religion,
     tags['self_service']                     AS self_service,
-    tags['service']                          AS service,
     tags['shelter']                          AS shelter,
     tags['social_facility']                  AS social_facility,
     tags['social_facility:for']              AS "social_facility:for",
