@@ -15,6 +15,11 @@
 
 set -eu
 
+if [[ $# -lt 2 ]]; then
+    echo "Error: Expected ./process.sh <input_file> <output_dir> ..."
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 INPUT="$1"
