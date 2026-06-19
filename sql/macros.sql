@@ -32,3 +32,26 @@ CREATE OR REPLACE MACRO prefix_map_split(pfx, t) AS (
     )
   )
 );
+
+CREATE OR REPLACE MACRO assert_col_not_empty(col_name) AS (
+    SELECT CASE
+        WHEN NOT EXISTS (
+            -- Must rewrap the col_name in an extra layer of quoting.
+            SELECT 1 FROM query('SELECT 1 FROM water WHERE "' || col_name || '" IS NOT NULL LIMIT 1')
+        )
+        THEN CAST(error('Assertion Failed: Empty column: ' || col_name) AS INTEGER)
+        ELSE 1
+    END
+);
+
+-- 2. Map/List Assertion Macro
+CREATE OR REPLACE MACRO assert_map_not_empty(col_name) AS (
+    SELECT CASE
+        WHEN NOT EXISTS (
+            -- Must rewrap the col_name in an extra layer of quoting.
+            SELECT 1 FROM query('SELECT 1 FROM water WHERE cardinality("' || col_name || '") > 0 LIMIT 1')
+        )
+        THEN CAST(error('Assertion Failed: Empty map found for column: ' || col_name) AS INTEGER)
+        ELSE 1
+    END
+);

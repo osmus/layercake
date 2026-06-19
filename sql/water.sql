@@ -28,6 +28,8 @@ COPY (
         tags['emergency'] IN ( 'lifeguard', 'water_rescue', 'life_ring', 'throw_bag', 'rescue_buoy') OR
         (
           tags['emergency'] = 'assembly_point' AND (
+            -- Unfortunately not all tsunami assembly points have the correct assembly_point:tsunami tag
+            -- https://www.openstreetmap.org/node/4368193931
             tags['assembly_point:tsunami'] IS NOT NULL OR
             tags['assembly_point:storm_surge'] IS NOT NULL
           )

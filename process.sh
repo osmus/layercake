@@ -4,7 +4,7 @@
 # using DuckDB with the osmium and spatial extensions.
 #
 # Usage: process.sh <input.osm.pbf> <output_dir> [--buildings] [--highways] ...
-#                   [--osmium-index-type=TYPE] [--duckdb-memory-limit=LIMIT]
+#             [--test] [--osmium-index-type=TYPE] [--duckdb-memory-limit=LIMIT]
 #
 # --osmium-index-type sets osmium's node location index type. The default
 # is 'flex_mem' which works well for both small and large extracts. For
@@ -29,6 +29,7 @@ shift 2
 # Parse optional layer flags
 BUILDINGS=0; HIGHWAYS=0; BOUNDARIES=0; SETTLEMENTS=0; PARKS=0; WATER=0
 ALL=1
+TEST=0
 OSMIUM_INDEX_TYPE=""
 DUCKDB_MEMORY_LIMIT=""
 
@@ -40,6 +41,7 @@ for arg in "$@"; do
     --settlements) SETTLEMENTS=1; ALL=0 ;;
     --parks)       PARKS=1; ALL=0 ;;
     --water)       WATER=1; ALL=0 ;;
+    --test)        TEST=1 ;;
     --osmium-index-type=*)   OSMIUM_INDEX_TYPE="${arg#*=}" ;;
     --duckdb-memory-limit=*) DUCKDB_MEMORY_LIMIT="${arg#*=}" ;;
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
@@ -57,15 +59,28 @@ mkdir -p "$OUTPUT_DIR"
 run_layer() {
   local name="$1"
   local output="${OUTPUT_DIR}/${name}.parquet"
-  echo "Extracting ${name} layer"
-  {
-    cat "${SCRIPT_DIR}/sql/macros.sql"
-    [ -n "$DUCKDB_MEMORY_LIMIT" ] && echo "SET memory_limit = '${DUCKDB_MEMORY_LIMIT}';"
-    [ -n "$OSMIUM_INDEX_TYPE" ] && echo "SET osmium_index_type = '${OSMIUM_INDEX_TYPE}';"
-    cat "${SCRIPT_DIR}/sql/${name}.sql"
-  } | \
-    sed "s|{{INPUT}}|${INPUT}|g; s|{{OUTPUT}}|${output}|g" | \
-    duckdb --unsigned
+  local script_file;
+
+  if [ "$TEST" = "1" ]; then
+    local script_file="${SCRIPT_DIR}/sql/${name}_test.sql"
+    if [ -f "$script_file" ]; then
+      echo "Testing ${name} layer"
+    fi
+  else
+    echo "Extracting ${name} layer"
+    local script_file="${SCRIPT_DIR}/sql/${name}.sql"
+  fi
+
+  if [ -f "$script_file" ]; then
+    {
+      cat "${SCRIPT_DIR}/sql/macros.sql"
+      [ -n "$DUCKDB_MEMORY_LIMIT" ] && echo "SET memory_limit = '${DUCKDB_MEMORY_LIMIT}';"
+      [ -n "$OSMIUM_INDEX_TYPE" ] && echo "SET osmium_index_type = '${OSMIUM_INDEX_TYPE}';"
+      cat "$script_file"
+    } | \
+      sed "s|{{INPUT}}|${INPUT}|g; s|{{OUTPUT}}|${output}|g" | \
+      duckdb --unsigned
+  fi
 }
 
 [ "$BUILDINGS" = "1" ]   && run_layer buildings
