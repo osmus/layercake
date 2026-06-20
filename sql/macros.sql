@@ -62,7 +62,17 @@ CREATE OR REPLACE MACRO assert_tag_not_empty(k, v) AS (
                 printf('SELECT 1 FROM water WHERE "%s" = ''%s'' LIMIT 1', k, v)
             )
         )
-        THEN CAST(error(printf('Assertion Failed: Empty column for "%s"=''%s''', k, v)) AS INTEGER)
+        THEN CAST(error(printf('Assertion Failed: Empty tag for "%s"=''%s''', k, v)) AS INTEGER)
+        ELSE 1
+    END
+);
+
+CREATE OR REPLACE MACRO assert_stmt_not_empty(stmt) AS (
+    SELECT CASE
+        WHEN NOT EXISTS (
+            SELECT 1 FROM query(stmt)
+        )
+        THEN CAST(error(printf('Assertion Failed: stmt ''%s'' produced no values', stmt)) AS INTEGER)
         ELSE 1
     END
 );

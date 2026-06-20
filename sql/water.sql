@@ -8,9 +8,9 @@ COPY (
         tags['man_made'] IN ('pier', 'breakwater', 'groyne', 'lighthouse', 'beacon', 'buoy', 'offshore_platform', 'pumping_station', 'water_well', 'spring', 'bridge') OR
         (
           tags['man_made'] = 'monitoring_station' AND (
-            tags['monitoring:water'] = 'yes' OR 
-            tags['monitoring:water_level'] = 'yes' OR 
-            tags['monitoring:water_quality'] = 'yes'
+            tags['monitoring:water'] IS NOT NULL OR
+            tags['monitoring:water_level'] IS NOT NULL OR
+            tags['monitoring:water_quality'] IS NOT NULL
           )
         ) OR
         tags['historic'] IN ('wreck','ship', 'aquaduct') OR
@@ -71,6 +71,7 @@ COPY (
     tags['surface']                          AS surface,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
+    prefix_map('monitoring:', tags)          AS monitoring,
     split_multi(tags['name'])                AS name,
     prefix_map_split('name:', tags)          AS names,
     split_multi(tags['official_name'])       AS official_name,
