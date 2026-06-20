@@ -28,6 +28,9 @@ SELECT assert_col_not_empty('emergency');
 SELECT assert_col_not_empty('landuse');
 SELECT assert_col_not_empty('industrial');
 SELECT assert_col_not_empty('amenity');
+SELECT assert_col_not_empty('ford');
+SELECT assert_col_not_empty('tidal');
+SELECT assert_col_not_empty('flood_prone');
 
 SELECT assert_map_not_empty('seamark');
 SELECT assert_map_not_empty('assembly_point');

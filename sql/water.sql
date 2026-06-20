@@ -34,6 +34,9 @@ COPY (
             tags['assembly_point:storm_surge'] IS NOT NULL
           )
         ) OR
+        tags['ford'] IS NOT NULL OR
+        tags['tidal'] IS NOT NULL OR
+        tags['flood_prone'] IS NOT NULL OR
         tags['landuse'] IN ('basin', 'reservoir', 'harbour') -- All deprecated synonyms
       )
   )
@@ -69,6 +72,9 @@ COPY (
     tags['access']                           AS access,
     tags['fee']                              AS fee,
     tags['surface']                          AS surface,
+    tags['ford']                             AS ford,
+    tags['tidal']                            AS tidal,
+    tags['flood_prone']                      AS flood_prone,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
     prefix_map('monitoring:', tags)          AS monitoring,
