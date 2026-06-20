@@ -16,7 +16,9 @@ COPY (
         tags['historic'] IN ('wreck','ship', 'aquaduct') OR
         tags['seamark:type'] IS NOT NULL OR
         tags['route'] IN ('ferry', 'portage') OR
-        tags['leisure'] IN ('slipway', 'marina') OR
+        tags['leisure'] IN ('slipway', 'marina', 'swimming_pool', 'swimming_area', 'water_park') OR
+        tags['amenity'] IN ('drinking_water', 'foot_shower', 'shower') OR
+        tags['sport'] IN ('canoe', 'cliff_diving', 'diving', 'dragon_boat', 'rowing', 'sailing', 'scuba_diving', 'surfing', 'swimming', 'wakeboarding', 'water_ski', 'windsurfing') OR
         tags['portage'] IS NOT NULL OR
         tags['canoe'] IS NOT NULL OR
         tags['mooring'] IS NOT NULL OR
@@ -75,6 +77,9 @@ COPY (
     tags['ford']                             AS ford,
     tags['tidal']                            AS tidal,
     tags['flood_prone']                      AS flood_prone,
+    tags['sport']                            AS sport,
+    tags['wheelchair']                       AS wheelchair,
+    tags['club']                             AS club,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
     prefix_map('monitoring:', tags)          AS monitoring,
