@@ -44,7 +44,6 @@ CREATE OR REPLACE MACRO assert_col_not_empty(col_name) AS (
     END
 );
 
--- 2. Map/List Assertion Macro
 CREATE OR REPLACE MACRO assert_map_not_empty(col_name) AS (
     SELECT CASE
         WHEN NOT EXISTS (
@@ -52,6 +51,18 @@ CREATE OR REPLACE MACRO assert_map_not_empty(col_name) AS (
             SELECT 1 FROM query('SELECT 1 FROM water WHERE cardinality("' || col_name || '") > 0 LIMIT 1')
         )
         THEN CAST(error('Assertion Failed: Empty map found for column: ' || col_name) AS INTEGER)
+        ELSE 1
+    END
+);
+
+CREATE OR REPLACE MACRO assert_tag_not_empty(k, v) AS (
+    SELECT CASE
+        WHEN NOT EXISTS (
+            SELECT 1 FROM query(
+                printf('SELECT 1 FROM water WHERE "%s" = ''%s'' LIMIT 1', k, v)
+            )
+        )
+        THEN CAST(error(printf('Assertion Failed: Empty column for "%s"=''%s''', k, v)) AS INTEGER)
         ELSE 1
     END
 );

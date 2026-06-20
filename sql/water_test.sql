@@ -28,5 +28,10 @@ SELECT assert_col_not_empty('emergency');
 SELECT assert_col_not_empty('landuse');
 SELECT assert_col_not_empty('industrial');
 SELECT assert_col_not_empty('amenity');
+
 SELECT assert_map_not_empty('seamark');
 SELECT assert_map_not_empty('assembly_point');
+
+SELECT assert_tag_not_empty('leisure','slipway');
+SELECT assert_tag_not_empty('lifeguard','tower');
+SELECT assert_tag_not_empty('emergency','lifeguard');
