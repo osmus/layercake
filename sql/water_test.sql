@@ -32,10 +32,13 @@ SELECT assert_col_not_empty('water', 'ford');
 SELECT assert_col_not_empty('water', 'tidal');
 SELECT assert_col_not_empty('water', 'flood_prone');
 SELECT assert_col_not_empty('water', 'wheelchair');
+SELECT assert_col_not_empty('water', 'whitewater');
 
 SELECT assert_map_not_empty('water', 'seamark');
 SELECT assert_map_not_empty('water', 'assembly_point');
 SELECT assert_map_not_empty('water', 'monitoring');
+-- Not present in the washington region
+-- SELECT assert_map_not_empty('water', 'whitewater_map');
 
 SELECT assert_tag_not_empty('water', 'leisure','slipway');
 SELECT assert_tag_not_empty('water', 'lifeguard','tower');

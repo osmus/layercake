@@ -1,57 +1,77 @@
-COPY (
+CREATE OR REPLACE TEMP TABLE water_features AS
+SELECT type, id, tags, geometry
+FROM '{{INPUT}}'
+WHERE (
+    (kind = 'line' AND tags['waterway'] IS NOT NULL) OR
+    (kind = 'area' AND (
+      tags['natural'] IN ('water', 'coastline', 'wetland') OR
+      tags['landuse'] IN ('basin', 'reservoir', 'harbour') OR
+      tags['waterway'] IS NOT NULL
+    ))
+  );
+
+CREATE OR REPLACE TEMP TABLE bridges_unfiltered AS
+SELECT type, id, tags, geometry
+FROM '{{INPUT}}'
+WHERE tags['man_made'] = 'bridge' OR tags['bridge'] IS NOT NULL;
+
+
+-- Known to exclude https://www.openstreetmap.org/way/35457618 from the Oregon region
+CREATE OR REPLACE TEMP TABLE water_bridges AS
+SELECT b.type, b.id, b.tags, b.geometry
+FROM bridges_unfiltered b
+JOIN water_features w
+  ON b.geometry && w.geometry
+  WHERE ST_Intersects(b.geometry, w.geometry);
+
+CREATE OR REPLACE TABLE water AS
   WITH raw AS (
-    SELECT x.type, x.id, x.tags, x.geometry
-    FROM '{{INPUT}}' as x
+    SELECT type, id, tags, geometry
+    FROM '{{INPUT}}'
     WHERE (
-        x.tags['natural'] IN ('water', 'coastline', 'wetland') OR
-        x.tags['waterway'] IS NOT NULL OR
-        x.tags['man_made'] IN ('pier', 'breakwater', 'groyne', 'lighthouse', 'beacon', 'buoy', 'offshore_platform', 'pumping_station', 'water_well', 'spring') OR
-        (
-          x.tags['man_made'] = 'monitoring_station' AND (
-            x.tags['monitoring:water'] IS NOT NULL OR
-            x.tags['monitoring:water_level'] IS NOT NULL OR
-            x.tags['monitoring:water_quality'] IS NOT NULL
-          )
-        ) OR
-        ( -- Bridges that intersect water
-          (x.tags['man_made'] = 'bridge' OR x.tags['bridge'] IS NOT NULL) AND EXISTS (
-            SELECT 1
-            FROM '{{INPUT}}' AS w
-            WHERE (
-              (w.kind = 'line' AND w.tags['waterway'] IS NOT NULL) OR
-              (w.kind = 'area' AND (w.tags['natural'] IN ('water', 'coastline', 'wetland') OR w.tags['landuse'] IN ('basin', 'reservoir', 'harbour') OR w.tags['waterway'] IS NOT NULL))
+
+          tags['man_made'] IN ('pier', 'breakwater', 'groyne', 'lighthouse', 'beacon', 'buoy', 'offshore_platform', 'pumping_station', 'water_well', 'spring') OR
+          (
+            tags['man_made'] = 'monitoring_station' AND (
+              tags['monitoring:water'] IS NOT NULL OR
+              tags['monitoring:water_level'] IS NOT NULL OR
+              tags['monitoring:water_quality'] IS NOT NULL
             )
-            AND ST_Intersects(x.geometry, w.geometry)
-          )
-        ) OR
-        x.tags['historic'] IN ('wreck','ship', 'aquaduct') OR
-        x.tags['seamark:type'] IS NOT NULL OR
-        x.tags['route'] IN ('ferry', 'portage') OR
-        x.tags['leisure'] IN ('slipway', 'marina', 'swimming_pool', 'swimming_area', 'water_park') OR
-        x.tags['amenity'] IN ('drinking_water', 'foot_shower', 'shower') OR
-        x.tags['sport'] IN ('canoe', 'cliff_diving', 'diving', 'dragon_boat', 'rowing', 'sailing', 'scuba_diving', 'surfing', 'swimming', 'wakeboarding', 'water_ski', 'windsurfing') OR
-        x.tags['portage'] IS NOT NULL OR
-        x.tags['canoe'] IS NOT NULL OR
-        x.tags['mooring'] IS NOT NULL OR
-        (x.tags['landuse'] = 'industrial' AND x.tags['industrial'] = 'port') OR
-        ( -- All deprecated in favor of tags['emergency'] = 'water_rescue'
-          x.tags['emergency'] IN ('lifeboat_station', 'marine_rescue') OR
-          x.tags['amenity'] = 'lifeboat_station'
-        ) OR
-        x.tags['emergency'] IN ( 'lifeguard', 'water_rescue', 'life_ring', 'throw_bag', 'rescue_buoy') OR
-        (
-          x.tags['emergency'] = 'assembly_point' AND (
-            -- Unfortunately not all tsunami assembly points have the correct assembly_point:tsunami tag
-            -- https://www.openstreetmap.org/node/4368193931
-            x.tags['assembly_point:tsunami'] IS NOT NULL OR
-            x.tags['assembly_point:storm_surge'] IS NOT NULL
-          )
-        ) OR
-        x.tags['ford'] IS NOT NULL OR
-        x.tags['tidal'] IS NOT NULL OR
-        x.tags['flood_prone'] IS NOT NULL OR
-        x.tags['landuse'] IN ('basin', 'reservoir', 'harbour') -- All deprecated synonyms
-      )
+          ) OR
+          tags['historic'] IN ('wreck','ship', 'aquaduct') OR
+          tags['seamark:type'] IS NOT NULL OR
+          tags['route'] IN ('ferry', 'portage') OR
+          tags['leisure'] IN ('slipway', 'marina', 'swimming_pool', 'swimming_area', 'water_park') OR
+          tags['amenity'] IN ('drinking_water', 'foot_shower', 'shower') OR
+          tags['sport'] IN ('canoe', 'cliff_diving', 'diving', 'dragon_boat', 'rowing', 'sailing', 'scuba_diving', 'surfing', 'swimming', 'wakeboarding', 'water_ski', 'windsurfing') OR
+          tags['portage'] IS NOT NULL OR
+          tags['canoe'] IS NOT NULL OR
+          tags['mooring'] IS NOT NULL OR
+          (tags['landuse'] = 'industrial' AND tags['industrial'] = 'port') OR
+          ( -- All deprecated in favor of tags['emergency'] = 'water_rescue'
+            tags['emergency'] IN ('lifeboat_station', 'marine_rescue') OR
+            tags['amenity'] = 'lifeboat_station'
+          ) OR
+          tags['emergency'] IN ( 'lifeguard', 'water_rescue', 'life_ring', 'throw_bag', 'rescue_buoy') OR
+          (
+            tags['emergency'] = 'assembly_point' AND (
+              -- Unfortunately not all tsunami assembly points have the correct assembly_point:tsunami tag
+              -- https://www.openstreetmap.org/node/4368193931
+              tags['assembly_point:tsunami'] IS NOT NULL OR
+              tags['assembly_point:storm_surge'] IS NOT NULL
+            )
+          ) OR
+          tags['ford'] IS NOT NULL OR
+          tags['tidal'] IS NOT NULL OR
+          tags['flood_prone'] IS NOT NULL OR
+          tags['whitewater'] IS NOT NULL
+    )
+    -- We call `SELECT DISTINCT` here instead of when the building of the "water_bridges" table
+    -- to work around a floating point exception which randomly goes away if you `PRAGMA threads = 1`
+    UNION ALL
+        SELECT DISTINCT type, id, tags, geometry FROM water_bridges
+    UNION ALL
+        SELECT type, id, tags, geometry FROM water_features
   )
   SELECT
     type,
@@ -89,9 +109,11 @@ COPY (
     tags['sport']                            AS sport,
     tags['wheelchair']                       AS wheelchair,
     tags['club']                             AS club,
+    tags['whitewater']                       AS whitewater,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
     prefix_map('monitoring:', tags)          AS monitoring,
+    prefix_map('whitewater:', tags)          AS whitewater_map,
     split_multi(tags['name'])                AS name,
     prefix_map_split('name:', tags)          AS names,
     split_multi(tags['official_name'])       AS official_name,
@@ -106,7 +128,7 @@ COPY (
     tags['description']                      AS description,
     tags['source']                           AS source,
     tags['wikidata']                         AS wikidata,
-    tags['wikipedia']                        AS wikipedia,   
+    tags['wikipedia']                        AS wikipedia,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
@@ -114,5 +136,6 @@ COPY (
       ymax: ST_YMax(geometry)::FLOAT
     } AS bbox,
     geometry
-  FROM raw
-) TO '{{OUTPUT}}' WITH (FORMAT PARQUET, COMPRESSION ZSTD);
+  FROM raw;
+
+COPY water TO '{{OUTPUT}}' WITH (FORMAT PARQUET, COMPRESSION ZSTD);
