@@ -49,7 +49,9 @@ WHERE (
           tags['tidal'] IS NOT NULL OR
           tags['flood_prone'] IS NOT NULL OR
           tags['whitewater'] IS NOT NULL OR
-          tags['club'] in ('sailing', 'scuba_diving', 'surf_life_saving')
+          tags['club'] in ('sailing', 'scuba_diving', 'surf_life_saving') OR
+          tags['shop'] = 'boat' OR
+          tags['boat:type'] IS NOT NULL
 );
 
 -- Known to exclude https://www.openstreetmap.org/way/35457618 from the Oregon region
@@ -108,6 +110,8 @@ COPY (
     tags['whitewater']                       AS whitewater,
     tags['shop']                             AS shop,
     tags['canoe_rental']                     AS canoe_rental,
+    tags['boat']                             AS boat,
+    tags['ship']                             AS ship,
     tags['pump']                             AS pump,               -- For man_made=water_well
     tags['drinking_water']                   AS drinking_water,     -- For man_made=water_well
     tags['handle']                           AS handle,             -- For man_made=water_well
@@ -120,6 +124,7 @@ COPY (
     prefix_map('monitoring:', tags)          AS "monitoring:",
     prefix_map('whitewater:', tags)          AS "whitewater:",
     prefix_map('addr:', tags)                AS "addr:",
+    prefix_map_split('boat:', tags)          AS "boat:",
     split_multi(tags['name'])                AS name,
     prefix_map_split('name:', tags)          AS names,
     split_multi(tags['official_name'])       AS official_name,
