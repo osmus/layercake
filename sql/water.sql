@@ -29,6 +29,7 @@ WHERE (
           tags['sport'] IN ('canoe', 'cliff_diving', 'diving', 'dragon_boat', 'rowing', 'sailing', 'scuba_diving', 'surfing', 'swimming', 'wakeboarding', 'water_ski', 'windsurfing') OR
           tags['portage'] IS NOT NULL OR
           tags['canoe'] IS NOT NULL OR
+          tags['canoe_rental'] IS NOT NULL OR
           tags['mooring'] IS NOT NULL OR
           (tags['landuse'] = 'industrial' AND tags['industrial'] = 'port') OR
           ( -- All deprecated in favor of tags['emergency'] = 'water_rescue'
@@ -106,6 +107,7 @@ COPY (
     tags['club']                             AS club,
     tags['whitewater']                       AS whitewater,
     tags['shop']                             AS shop,
+    tags['canoe_rental']                     AS canoe_rental,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
     prefix_map('monitoring:', tags)          AS monitoring,
