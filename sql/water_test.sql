@@ -37,11 +37,12 @@ SELECT assert_col_not_empty('water', 'club');
 SELECT assert_col_not_empty('water', 'shop');
 SELECT assert_col_not_empty('water', 'canoe_rental');
 
-SELECT assert_map_not_empty('water', 'seamark');
-SELECT assert_map_not_empty('water', 'assembly_point');
-SELECT assert_map_not_empty('water', 'monitoring');
+SELECT assert_map_not_empty('water', 'seamark:');
+SELECT assert_map_not_empty('water', 'assembly_point:');
+SELECT assert_map_not_empty('water', 'monitoring:');
+SELECT assert_map_not_empty('water', 'addr:');
 -- Not present in the washington region
--- SELECT assert_map_not_empty('water', 'whitewater_map');
+-- SELECT assert_map_not_empty('water', 'whitewater:');
 
 SELECT assert_tag_not_empty('water', 'leisure','slipway');
 SELECT assert_tag_not_empty('water', 'lifeguard','tower');
@@ -96,3 +97,11 @@ SELECT assert_stmt_not_empty('SELECT 1 FROM water WHERE ("landuse" = ''industria
 -- SELECT assert_tag_not_empty('water', 'man_made','offshore_platform');
 -- SELECT assert_tag_not_empty('water', 'man_made','spring');
 -- SELECT assert_tag_not_empty('water', 'historic','aquaduct');
+
+-- Relating to man_made=water_well
+--SELECT assert_map_not_empty('water', 'pump:');
+SELECT assert_col_not_empty('water', 'pump');
+SELECT assert_col_not_empty('water', 'drinking_water');
+-- SELECT assert_col_not_empty('water', 'handle');
+SELECT assert_col_not_empty('water', 'mechanical_driver');
+SELECT assert_col_not_empty('water', 'depth');

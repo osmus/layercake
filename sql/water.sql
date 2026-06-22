@@ -108,11 +108,18 @@ COPY (
     tags['whitewater']                       AS whitewater,
     tags['shop']                             AS shop,
     tags['canoe_rental']                     AS canoe_rental,
-    prefix_map('seamark:', tags)             AS seamark,
-    prefix_map('assembly_point:', tags)      AS assembly_point,
-    prefix_map('monitoring:', tags)          AS monitoring,
-    prefix_map('whitewater:', tags)          AS whitewater_map,
-    prefix_map('addr:', tags)                AS addr,
+    tags['pump']                             AS pump,               -- For man_made=water_well
+    tags['drinking_water']                   AS drinking_water,     -- For man_made=water_well
+    tags['handle']                           AS handle,             -- For man_made=water_well
+    tags['mechanical_driver']                AS mechanical_driver,  -- For man_made=water_well
+    tags['depth']                            AS depth,              -- For man_made=water_well
+    tags['mechanism']                        AS mechanism,          -- For man_made=water_well
+    prefix_map('pump:', tags)                AS "pump:",            -- For man_made=water_well
+    prefix_map('seamark:', tags)             AS "seamark:",
+    prefix_map('assembly_point:', tags)      AS "assembly_point:",
+    prefix_map('monitoring:', tags)          AS "monitoring:",
+    prefix_map('whitewater:', tags)          AS "whitewater:",
+    prefix_map('addr:', tags)                AS "addr:",
     split_multi(tags['name'])                AS name,
     prefix_map_split('name:', tags)          AS names,
     split_multi(tags['official_name'])       AS official_name,
