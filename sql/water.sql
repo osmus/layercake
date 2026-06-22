@@ -1,35 +1,18 @@
-CREATE OR REPLACE TEMP TABLE water_features AS
-SELECT type, id, tags, geometry
-FROM '{{INPUT}}'
-WHERE (
-    (kind = 'line' AND tags['waterway'] IS NOT NULL) OR
-    (kind = 'area' AND (
-      tags['natural'] IN ('water', 'coastline', 'wetland') OR
-      tags['landuse'] IN ('basin', 'reservoir', 'harbour') OR
-      tags['waterway'] IS NOT NULL
-    ))
-  );
-
 CREATE OR REPLACE TEMP TABLE bridges_unfiltered AS
 SELECT type, id, tags, geometry
 FROM '{{INPUT}}'
 WHERE tags['man_made'] = 'bridge' OR tags['bridge'] IS NOT NULL;
 
-
--- Known to exclude https://www.openstreetmap.org/way/35457618 from the Oregon region
-CREATE OR REPLACE TEMP TABLE water_bridges AS
-SELECT b.type, b.id, b.tags, b.geometry
-FROM bridges_unfiltered b
-JOIN water_features w
-  ON b.geometry && w.geometry
-  WHERE ST_Intersects(b.geometry, w.geometry);
-
-CREATE OR REPLACE TABLE water AS
-  WITH raw AS (
-    SELECT type, id, tags, geometry
-    FROM '{{INPUT}}'
-    WHERE (
-
+CREATE OR REPLACE TEMP TABLE water_features AS
+SELECT type, id, tags, geometry
+FROM '{{INPUT}}'
+WHERE (
+          (kind = 'line' AND tags['waterway'] IS NOT NULL) OR
+          (kind = 'area' AND (
+            tags['natural'] IN ('water', 'coastline', 'wetland') OR
+            tags['landuse'] IN ('basin', 'reservoir', 'harbour') OR
+            tags['waterway'] IS NOT NULL
+          )) OR
           tags['man_made'] IN ('pier', 'breakwater', 'groyne', 'lighthouse', 'beacon', 'buoy', 'offshore_platform', 'pumping_station', 'water_well', 'spring') OR
           (
             tags['man_made'] = 'monitoring_station' AND (
@@ -65,13 +48,24 @@ CREATE OR REPLACE TABLE water AS
           tags['tidal'] IS NOT NULL OR
           tags['flood_prone'] IS NOT NULL OR
           tags['whitewater'] IS NOT NULL
-    )
+);
+
+-- Known to exclude https://www.openstreetmap.org/way/35457618 from the Oregon region
+CREATE OR REPLACE TEMP TABLE water_bridges AS
+SELECT b.type, b.id, b.tags, b.geometry
+FROM bridges_unfiltered b
+JOIN water_features w
+  ON b.geometry && w.geometry
+  WHERE ST_Intersects(b.geometry, w.geometry);
+
+COPY (
+  WITH raw AS (
     -- We call `SELECT DISTINCT` here instead of when the building of the "water_bridges" table
     -- to work around a floating point exception which randomly goes away if you `PRAGMA threads = 1`
+    SELECT DISTINCT type, id, tags, geometry FROM water_bridges
+
     UNION ALL
-        SELECT DISTINCT type, id, tags, geometry FROM water_bridges
-    UNION ALL
-        SELECT type, id, tags, geometry FROM water_features
+      SELECT type, id, tags, geometry FROM water_features
   )
   SELECT
     type,
@@ -136,6 +130,5 @@ CREATE OR REPLACE TABLE water AS
       ymax: ST_YMax(geometry)::FLOAT
     } AS bbox,
     geometry
-  FROM raw;
-
-COPY water TO '{{OUTPUT}}' WITH (FORMAT PARQUET, COMPRESSION ZSTD);
+  FROM raw
+) TO '{{OUTPUT}}' WITH (FORMAT PARQUET, COMPRESSION ZSTD);
