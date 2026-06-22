@@ -25,7 +25,7 @@ WHERE (
           tags['seamark:type'] IS NOT NULL OR
           tags['route'] IN ('ferry', 'portage') OR
           tags['leisure'] IN ('slipway', 'marina', 'swimming_pool', 'swimming_area', 'water_park') OR
-          tags['amenity'] IN ('drinking_water', 'foot_shower', 'shower') OR
+          tags['amenity'] IN ('drinking_water', 'foot_shower', 'shower', 'boat_rental') OR
           tags['sport'] IN ('canoe', 'cliff_diving', 'diving', 'dragon_boat', 'rowing', 'sailing', 'scuba_diving', 'surfing', 'swimming', 'wakeboarding', 'water_ski', 'windsurfing') OR
           tags['portage'] IS NOT NULL OR
           tags['canoe'] IS NOT NULL OR
@@ -47,7 +47,8 @@ WHERE (
           tags['ford'] IS NOT NULL OR
           tags['tidal'] IS NOT NULL OR
           tags['flood_prone'] IS NOT NULL OR
-          tags['whitewater'] IS NOT NULL
+          tags['whitewater'] IS NOT NULL OR
+          tags['club'] in ('sailing', 'scuba_diving', 'surf_life_saving')
 );
 
 -- Known to exclude https://www.openstreetmap.org/way/35457618 from the Oregon region
@@ -104,10 +105,12 @@ COPY (
     tags['wheelchair']                       AS wheelchair,
     tags['club']                             AS club,
     tags['whitewater']                       AS whitewater,
+    tags['shop']                             AS shop,
     prefix_map('seamark:', tags)             AS seamark,
     prefix_map('assembly_point:', tags)      AS assembly_point,
     prefix_map('monitoring:', tags)          AS monitoring,
     prefix_map('whitewater:', tags)          AS whitewater_map,
+    prefix_map('addr:', tags)                AS addr,
     split_multi(tags['name'])                AS name,
     prefix_map_split('name:', tags)          AS names,
     split_multi(tags['official_name'])       AS official_name,

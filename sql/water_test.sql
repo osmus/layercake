@@ -33,6 +33,8 @@ SELECT assert_col_not_empty('water', 'tidal');
 SELECT assert_col_not_empty('water', 'flood_prone');
 SELECT assert_col_not_empty('water', 'wheelchair');
 SELECT assert_col_not_empty('water', 'whitewater');
+SELECT assert_col_not_empty('water', 'club');
+SELECT assert_col_not_empty('water', 'shop');
 
 SELECT assert_map_not_empty('water', 'seamark');
 SELECT assert_map_not_empty('water', 'assembly_point');
@@ -64,6 +66,7 @@ SELECT assert_tag_not_empty('water', 'man_made','bridge');
 SELECT assert_tag_not_empty('water', 'amenity','drinking_water');
 SELECT assert_tag_not_empty('water', 'amenity','foot_shower');
 SELECT assert_tag_not_empty('water', 'amenity','shower');
+SELECT assert_tag_not_empty('water', 'amenity','boat_rental');
 SELECT assert_tag_not_empty('water', 'leisure','swimming_area');
 SELECT assert_tag_not_empty('water', 'leisure','swimming_pool');
 SELECT assert_tag_not_empty('water', 'leisure','water_park');
