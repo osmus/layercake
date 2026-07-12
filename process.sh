@@ -41,6 +41,7 @@ for arg in "$@"; do
     --parks)       PARKS=1; ALL=0 ;;
     --pois)        POIS=1; ALL=0 ;;
     --addresses)   ADDRESSES=1; ALL=0 ;;
+    --water)       WATER=1; ALL=0 ;;
     --osmium-index-type=*)   OSMIUM_INDEX_TYPE="${arg#*=}" ;;
     --duckdb-memory-limit=*) DUCKDB_MEMORY_LIMIT="${arg#*=}" ;;
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
@@ -48,7 +49,7 @@ for arg in "$@"; do
 done
 
 if [ "$ALL" = "1" ]; then
-  BUILDINGS=1; HIGHWAYS=1; BOUNDARIES=1; SETTLEMENTS=1; PARKS=1; POIS=1; ADDRESSES=1
+  BUILDINGS=1; HIGHWAYS=1; BOUNDARIES=1; SETTLEMENTS=1; PARKS=1; POIS=1; ADDRESSES=1; WATER=1
 fi
 
 mkdir -p "$OUTPUT_DIR"
@@ -76,5 +77,6 @@ run_layer() {
 [ "$PARKS" = "1" ]       && run_layer parks
 [ "$POIS" = "1" ]        && run_layer pois
 [ "$ADDRESSES" = "1" ]   && run_layer addresses
+[ "$WATER" = "1" ]       && run_layer water
 
 echo "Done"

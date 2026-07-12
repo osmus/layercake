@@ -32,3 +32,27 @@ CREATE OR REPLACE MACRO prefix_map_split(pfx, t) AS (
     )
   )
 );
+
+-- If a map is empty, returns NULL, otherwise return the map.
+CREATE OR REPLACE MACRO try_map(m1) AS (
+  CASE
+      -- A little tricky to do without triggering the type checker,
+      -- This is why we route through `len(map_keys(..))` instead of calling `cardinality()`
+      WHEN len(map_keys(m1)) = 0 THEN NULL
+      ELSE m1
+  END
+);
+
+-- Given a map of tags, and a list of tag names, yields a map with those named values.
+-- e.g. given map_from_tags(tags, ['boat, 'canoe']) on {id: 1, canoe: 'yes', boat: 'no', ...}
+-- yields {canoe: 'yes', boat: 'no'}.
+CREATE OR REPLACE MACRO map_from_tag_list(tags, tag_list) AS (
+  try_map(
+    MAP_FROM_ENTRIES(
+      LIST_FILTER(
+        MAP_ENTRIES(tags),
+        lambda kv: kv.key IN tag_list AND kv.value IS NOT NULL
+      )
+    )
+  )
+);
