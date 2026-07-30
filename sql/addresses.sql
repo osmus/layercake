@@ -44,11 +44,6 @@ COPY (
     tags['addr:country']             AS "addr:country",
     -- Full, unstructured address; not machine-readable but maybe useful
     tags['addr:full']                AS "addr:full",
-    -- Usually a tagging error for addr:postcode, but common enough to include
-    tags['postal_code']              AS postal_code,
-    tags['building']                 AS building,
-    tags['name']                     AS name,
-    prefix_map('name:', tags)        AS names,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
