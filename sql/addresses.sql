@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, ST_PointOnSurface(geometry) AS geometry
     FROM '{{INPUT}}'
     WHERE (kind = 'node' OR kind = 'area')
       AND (
