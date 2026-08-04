@@ -2,7 +2,7 @@ FROM alpine:3.23
 
 RUN apk add curl libosmium g++ make cmake zlib-dev expat-dev bzip2-dev lz4-dev
 
-ENV DUCKDB_VERSION 1.5.1
+ENV DUCKDB_VERSION 1.5.5
 RUN ARCH=$(uname -m) && \
     case "$ARCH" in \
         x86_64)  DIST="linux-amd64-musl" ;; \

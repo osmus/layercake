@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE kind = 'node'
       AND tags['place'] IN (
@@ -22,6 +22,8 @@ COPY (
     tags['wikidata']                        AS wikidata,
     tags['wikipedia']                       AS wikipedia,
     TRY_CAST(tags['population'] AS UBIGINT) AS population,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,

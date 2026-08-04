@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE (kind = 'node' OR kind = 'area')
       AND (
@@ -34,6 +34,8 @@ COPY (
     tags['website']                             AS website,
     tags['wikidata']                            AS wikidata,
     tags['wikipedia']                           AS wikipedia,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
