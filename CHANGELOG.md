@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## v0.3.0
+
+Released 2026-08-04
+
+- add a POIs layer
+- add an addresses layer
+- remove `addr:*` columns from buildings layer
+- add `--osmium-index-type` and `--duckdb-memory-limit` CLI flags
+
 ## v0.2.0
 
 Released 2026-04-13
