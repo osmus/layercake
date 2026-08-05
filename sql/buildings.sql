@@ -4,7 +4,6 @@ COPY (
     FROM '{{INPUT}}'
     WHERE kind = 'area'
       AND tags['building'] IS NOT NULL
-      -- AND tags['building'] != 'no'
   )
   SELECT
     type,
@@ -17,10 +16,6 @@ COPY (
     tags['building:part']       AS "building:part",
     tags['building:use']        AS "building:use",
     tags['name']                AS name,
-    tags['addr:housenumber']    AS "addr:housenumber",
-    tags['addr:street']         AS "addr:street",
-    tags['addr:city']           AS "addr:city",
-    tags['addr:postcode']       AS "addr:postcode",
     tags['website']             AS website,
     tags['wikipedia']           AS wikipedia,
     tags['wikidata']            AS wikidata,
