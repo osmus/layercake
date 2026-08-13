@@ -37,7 +37,6 @@ COPY (
     tags['canoe']   	      AS canoe,
     -- Reason: Hazards,
     tags['open_water']      AS open_water,
-    prefix_map('whitewater:', tags) AS whitewaters,
     tags['narrow']          AS narrow,
     tags['rapids']          AS rapids,
     tags['rapids:name']     AS 'rapids:name',
