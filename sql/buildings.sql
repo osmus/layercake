@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE kind = 'area'
       AND tags['building'] IS NOT NULL
@@ -29,6 +29,8 @@ COPY (
     tags['start_date']          AS start_date,
     tags['access']              AS access,
     tags['wheelchair']          AS wheelchair,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,

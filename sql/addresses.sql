@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, ST_PointOnSurface(geometry) AS geometry
+    SELECT type, id, tags, version, timestamp, ST_PointOnSurface(geometry) AS geometry
     FROM '{{INPUT}}'
     WHERE (kind = 'node' OR kind = 'area')
       AND (
@@ -44,6 +44,8 @@ COPY (
     tags['addr:country']             AS "addr:country",
     -- Full, unstructured address; not machine-readable but maybe useful
     tags['addr:full']                AS "addr:full",
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
