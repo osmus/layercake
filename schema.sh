@@ -30,22 +30,27 @@ trap cleanup EXIT HUP INT TERM
         printf '## %s\n\n' "$table"
 
         awk '
+            # Remove whitespace around an extracted column name.
             function trim(value) {
                 sub(/^[[:space:]]+/, "", value)
                 sub(/[[:space:]]+$/, "", value)
                 return value
             }
 
+            # The second SELECT is the layer output schema. Start reading
+            # columns there rather than the SELECT in the raw CTE.
             /^[[:space:]]*SELECT[[:space:]]*$/ {
                 in_output_select = 1
                 next
             }
 
+            # The output column list ends immediately before FROM raw.
             in_output_select && /^[[:space:]]*FROM[[:space:]]+raw[[:space:]]*$/ {
                 exit
             }
 
             in_output_select {
+                # Normalize the line before examining the selected expression.
                 line = $0
                 sub(/^[[:space:]]+/, "", line)
                 sub(/[[:space:]]*,[[:space:]]*$/, "", line)
@@ -54,11 +59,15 @@ trap cleanup EXIT HUP INT TERM
                 if (line ~ /^--/ || line ~ /^[{]/ || line ~ /^}[[:space:]]*$/ || line == "")
                     next
 
+                # type, id, and geometry are selected without aliases.
                 if (line == "type" || line == "id" || line == "geometry") {
                     column = line
+                # For expressions, keep the name following AS as the column.
                 } else if (line ~ /[[:space:]]+AS[[:space:]]+/) {
                     sub(/^.*[[:space:]]+AS[[:space:]]+/, "", line)
                     column = trim(line)
+                    # SQL permits aliases surrounded by single or double
+                    # quotes (and backticks), which are not part of the name.
                     quote = sprintf("%c", 39)
                     if (substr(column, 1, 1) == quote || substr(column, 1, 1) == "\"" || substr(column, 1, 1) == "`")
                         column = substr(column, 2)
