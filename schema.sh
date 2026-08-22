@@ -17,7 +17,9 @@ trap cleanup EXIT HUP INT TERM
 
 {
     printf '%s\n' '# Layercake schema' '' \
-        'Generated from the SQL layer definitions in [`sql/`](sql/).' ''
+        'Generated from the SQL layer definitions in [`sql/`](sql/).' '' \
+        'For an exact version of the deployed schema, use duckdb to check ex.' '' \
+        '`DESCRIBE SELECT * FROM '\''https://data.openstreetmap.us/layercake/parks.parquet'\'';`' ''
 
     found_layer=0
     for sql_file in "$SQL_DIR"/*.sql; do

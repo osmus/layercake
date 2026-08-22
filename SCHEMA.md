@@ -2,6 +2,10 @@
 
 Generated from the SQL layer definitions in [`sql/`](sql/).
 
+For an exact version of the deployed schema, use duckdb to check ex.
+
+`DESCRIBE SELECT * FROM 'https://data.openstreetmap.us/layercake/parks.parquet';`
+
 ## addresses
 
 `type`, `id`, `addr:housenumber`, `addr:housename`, `addr:conscriptionnumber`, `addr:streetnumber`, `addr:provisionalnumber`, `addr:flats`, `addr:unit`, `addr:floor`, `addr:door`, `addr:street`, `addr:place`, `addr:city`, `addr:postcode`, `addr:hamlet`, `addr:district`, `addr:suburb`, `addr:neighbourhood`, `addr:quarter`, `addr:block_number`, `addr:block`, `addr:village`, `addr:town`, `addr:subdistrict`, `addr:county`, `addr:province`, `addr:state`, `addr:country`, `addr:full`, `bbox`, `geometry`
