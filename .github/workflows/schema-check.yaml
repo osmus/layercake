@@ -1,0 +1,22 @@
+name: Check Generated Schema
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate schema
+        run: ./schema.sh
+
+      - name: Check SCHEMA.md is up to date
+        run: git diff --exit-code -- SCHEMA.md
