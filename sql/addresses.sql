@@ -5,7 +5,9 @@ COPY (
     WHERE (kind = 'node' OR kind = 'area')
       AND (
         tags['addr:housenumber'] IS NOT NULL OR
-        tags['addr:housename']   IS NOT NULL
+        tags['addr:housename'] IS NOT NULL OR
+        tags['addr:city'] IS NOT NULL OR
+        tags['addr:state'] IS NOT NULL
       )
   )
   SELECT
