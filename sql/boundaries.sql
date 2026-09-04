@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE kind = 'area'
       AND tags['boundary'] IN ('administrative', 'aboriginal_lands', 'maritime', 'disputed', 'place')
@@ -28,6 +28,8 @@ COPY (
     split_multi(tags['claimed_by'])          AS claimed_by,
     split_multi(tags['controlled_by'])       AS controlled_by,
     split_multi(tags['recognized_by'])       AS recognized_by,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,

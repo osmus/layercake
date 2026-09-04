@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE tags['highway'] IS NOT NULL
       AND (
@@ -44,6 +44,8 @@ COPY (
     tags['motorcycle']      AS motorcycle,
     tags['oneway']          AS oneway,
     tags['toll']            AS toll,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,

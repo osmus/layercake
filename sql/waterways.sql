@@ -1,6 +1,6 @@
 COPY (
   WITH raw AS (
-    SELECT type, id, tags, geometry
+    SELECT type, id, tags, version, timestamp, geometry
     FROM '{{INPUT}}'
     WHERE kind = 'line'
       AND tags['waterway'] IN ('river', 'stream', 'canal', 'ditch', 'drain', 'flowline', 'fairway', 'link')
@@ -41,6 +41,8 @@ COPY (
     tags['rapids']                   AS rapids,
     tags['rapids:name']              AS 'rapids:name',
     tags['hazard']                   AS hazard,
+    version,
+    timestamp,
     {
       xmin: ST_XMin(geometry)::FLOAT,
       ymin: ST_YMin(geometry)::FLOAT,
