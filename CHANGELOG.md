@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 Versioning of this project adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) spec.
 
+## v0.4.0
+
+Released 2026-09-13
+
+- add a waterways layer
+- add a wetlands layer
+- add `timestamp` and `version` columns to all layers
+- layers are now allowed to contain NULL geometries (if geometry construction fails for an element)
+
+Sidenote: Layercake has a new website and download tool! https://layercake.openstreetmap.us/
+
 ## v0.3.0
 
 Released 2026-08-04
