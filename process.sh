@@ -28,6 +28,7 @@ shift 2
 
 # Parse optional layer flags
 BUILDINGS=0; HIGHWAYS=0; BOUNDARIES=0; SETTLEMENTS=0; PARKS=0; POIS=0; ADDRESSES=0
+WATERWAYS=0; WETLANDS=0
 ALL=1
 OSMIUM_INDEX_TYPE=""
 DUCKDB_MEMORY_LIMIT=""
@@ -42,6 +43,7 @@ for arg in "$@"; do
     --pois)        POIS=1; ALL=0 ;;
     --addresses)   ADDRESSES=1; ALL=0 ;;
     --waterways)   WATERWAYS=1; ALL=0 ;;
+    --wetlands)    WETLANDS=1; ALL=0 ;;
     --osmium-index-type=*)   OSMIUM_INDEX_TYPE="${arg#*=}" ;;
     --duckdb-memory-limit=*) DUCKDB_MEMORY_LIMIT="${arg#*=}" ;;
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
@@ -49,7 +51,7 @@ for arg in "$@"; do
 done
 
 if [ "$ALL" = "1" ]; then
-  BUILDINGS=1; HIGHWAYS=1; BOUNDARIES=1; SETTLEMENTS=1; PARKS=1; POIS=1; ADDRESSES=1; WATERWAYS=1
+  BUILDINGS=1; HIGHWAYS=1; BOUNDARIES=1; SETTLEMENTS=1; PARKS=1; POIS=1; ADDRESSES=1; WATERWAYS=1; WETLANDS=1
 fi
 
 mkdir -p "$OUTPUT_DIR"
@@ -78,5 +80,6 @@ run_layer() {
 [ "$POIS" = "1" ]        && run_layer pois
 [ "$ADDRESSES" = "1" ]   && run_layer addresses
 [ "$WATERWAYS" = "1" ]   && run_layer waterways
+[ "$WETLANDS" = "1" ]    && run_layer wetlands
 
 echo "Done"
