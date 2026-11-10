@@ -5,7 +5,7 @@ COPY (
     WHERE kind = 'node'
       AND tags['place'] IN (
         'city', 'town', 'village', 'hamlet', 'isolated_dwelling', 'farm', 'allotments',
-        'borough', 'suburb', 'quarter', 'neighborhood', 'city_block'
+        'borough', 'suburb', 'quarter', 'neighbourhood', 'city_block'
       )
       AND tags['name'] IS NOT NULL
   )
